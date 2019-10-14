@@ -302,7 +302,43 @@ namespace LiteDatabase
         }
         public void Remove(string id1,string id2)
         {
+            FileInfo fi = new FileInfo(Path.Combine(FormDirectory.FullName, id1 + ".lite-db"));
+            if (!fi.Exists) fi.Create().Dispose();
+            var tR = File.ReadAllLines(fi.FullName).ToList();
+            int length = tR.Count;
+            bool logMode = false;
+            int count = 1;
+            int index = -1;
+            for (int i = 0; i < tR.Count; i++)
+            {
+                if (logMode == true)
+                {
+                    count++;
+                    if (tR[i] == "DATA#")
+                    {
+                        logMode = false;
+                        break;
+                    }
+                    else
+                    {
+                    }
+                }
+                else
+                {
 
+                    if (tR[i] == "#DATA:" + id2)
+                    {
+                        index = i;
+                        logMode = true;
+                    }
+                }
+            }
+            tR.RemoveRange(index, count);
+            File.WriteAllLines(fi.FullName, tR);
+            if(LoadMode== DatabaseMode.Cache||LoadMode== DatabaseMode.SemiCache)
+            {
+                data[id1].Remove(id2);
+            }
         }
         public bool Save(string id1, string id2, Object content)
         {
