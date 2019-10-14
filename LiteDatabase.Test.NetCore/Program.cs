@@ -1,5 +1,7 @@
-﻿using System;
+﻿using LiteDatabase.CustomedCryptography;
+using System;
 using System.IO;
+using System.Security.Cryptography;
 
 namespace LiteDatabase.Test.NetCore
 {
@@ -7,9 +9,13 @@ namespace LiteDatabase.Test.NetCore
     {
         static void Main(string[] args)
         {
-            Console.WriteLine((new DirectoryInfo("./").FullName));
-            Database liteDatabase = new Database(loadMode: DatabaseMode.OnDemand);
-            liteDatabase.OpenForm();
+            CustomedAES customedAES = new CustomedAES();
+            Console.WriteLine(customedAES.GenerateKey());
+
+            //Console.WriteLine((new DirectoryInfo("./").FullName));
+            //Database liteDatabase = new Database(loadMode: DatabaseMode.OnDemand);
+            //liteDatabase.OpenForm();
+
             //Console.WriteLine("Test LiteDatabase");
             //Console.WriteLine("Pressure Test");
             //Console.WriteLine("Please enter id1 length:");
