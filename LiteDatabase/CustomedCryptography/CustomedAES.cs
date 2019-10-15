@@ -16,7 +16,7 @@ namespace LiteDatabase.CustomedCryptography
             Random rnd = new Random(DateTime.Now.Millisecond);
             for (int i = 0; i < length; i++)
             {
-                num.Append((char)rnd.Next(32, 126));
+                num.Append((char)rnd.Next(32, 122));
             }
             //32~126
 
