@@ -10,7 +10,7 @@ namespace LiteDatabase.Test.NetCore
         static void Main(string[] args)
         {
             CustomedAES customedAES = new CustomedAES();
-            Console.WriteLine(customedAES.GenerateKey());
+            Console.WriteLine(CustomedAES.GenerateKey());
 
             //Console.WriteLine((new DirectoryInfo("./").FullName));
             //Database liteDatabase = new Database(loadMode: DatabaseMode.OnDemand);

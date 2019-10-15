@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LiteDatabase.CustomedCryptography;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,10 +16,18 @@ namespace LiteDatabase
         DatabaseMode LoadMode;
         public readonly string Flavor = "Original";
         public readonly Version DatabaseVersion = new Version(1, 0, 2, 0);
-        public bool isAESEnabled = false;
+        public CryptographyCredential cryptographyCredential = new CryptographyCredential();
         public DirectoryInfo HomeDirectory = new DirectoryInfo("./Databases/");
-        public Database(String Home="./Databases/",DatabaseMode loadMode = DatabaseMode.OnDemand)
+        public Database(String Home="./Databases/",DatabaseMode loadMode = DatabaseMode.OnDemand,CryptographyCredential cryptographyCredential= null)
         {
+            if (cryptographyCredential == null)
+            {
+                this.cryptographyCredential = new CryptographyCredential();
+            }
+            else
+            {
+                this.cryptographyCredential = cryptographyCredential;
+            }
             HomeDirectory = new DirectoryInfo(Home);
             LoadMode = loadMode;
             switch (LoadMode)

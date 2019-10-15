@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Security.Cryptography;
+using System.IO;
+
 namespace LiteDatabase.CustomedCryptography
 {
     public class CustomedAES
@@ -32,11 +34,108 @@ namespace LiteDatabase.CustomedCryptography
         {
 
         }
-
+        public string Key { get; set; }
+        public string IV  { get; set; }
+        public byte[] GenerateFromString(string str)
+        {
+            List<byte> vs = new List<byte>();
+            foreach (var item in str)
+            {
+                vs.Add((byte)item);
+            }
+            return vs.ToArray();
+        }
         public string Encrypt(string content)
         {
-            Aes aes = Aes.Create();
-            return null;
+            var key= GenerateFromString(Key);
+            var iv= GenerateFromString(IV);
+            byte[] DATA = Encoding.UTF8.GetBytes(content);
+            var encryptor= AESEncrypt(DATA,key, iv);
+            if (encryptor == null)
+            {
+                return null;
+            }
+            return Convert.ToBase64String(encryptor);
         }
+        public string Decrypt(string content)
+        {
+            var key = GenerateFromString(Key);
+            var iv = GenerateFromString(IV);
+            byte[] DATA = Encoding.UTF8.GetBytes(content);
+            var result = AESDecrypt(DATA, key, iv);
+            if (result == null)
+            {
+                return null;
+            }
+            return Convert.ToBase64String(result);
+        }
+        public static byte[] AESEncrypt(byte[] data, byte[] key, byte[] vector)
+        {
+
+            byte[] bytes = data;
+
+            byte[] encryptData = null; // encrypted data
+            using (Aes Aes = Aes.Create())
+            {
+                try
+                {
+                    using (MemoryStream Memory = new MemoryStream())
+                    {
+                        using (CryptoStream Encryptor = new CryptoStream(Memory,
+                         Aes.CreateEncryptor(key, vector),
+                         CryptoStreamMode.Write))
+                        {
+                            Encryptor.Write(bytes, 0, bytes.Length);
+                            Encryptor.FlushFinalBlock();
+
+                            encryptData = Memory.ToArray();
+                        }
+                    }
+                }
+                catch
+                {
+                    encryptData = null;
+                }
+                return encryptData;
+            }
+        }
+            public static byte[] AESDecrypt(byte[] data, byte[] key, byte[] vector)
+            {
+
+                byte[] encryptedBytes = data;
+
+                byte[] decryptedData = null; // decrypted data
+
+                using (Aes Aes = Aes.Create())
+                {
+                    try
+                    {
+                        using (MemoryStream Memory = new MemoryStream(encryptedBytes))
+                        {
+                            using (CryptoStream Decryptor = new CryptoStream(Memory, Aes.CreateDecryptor(key, vector), CryptoStreamMode.Read))
+                            {
+                                using (MemoryStream tempMemory = new MemoryStream())
+                                {
+                                    byte[] Buffer = new byte[1024];
+                                    Int32 readBytes = 0;
+                                    while ((readBytes = Decryptor.Read(Buffer, 0, Buffer.Length)) > 0)
+                                    {
+                                        tempMemory.Write(Buffer, 0, readBytes);
+                                    }
+
+                                    decryptedData = tempMemory.ToArray();
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        decryptedData = null;
+                    }
+
+                    return decryptedData;
+                }
+            }
+        
     }
 }
