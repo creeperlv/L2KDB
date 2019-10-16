@@ -16,7 +16,12 @@ namespace LiteDatabase.CustomedCryptography
             Random rnd = new Random(DateTime.Now.Millisecond);
             for (int i = 0; i < length; i++)
             {
-                num.Append((char)rnd.Next(32, 122));
+                int r = 0;
+                while ((r=rnd.Next(48, 122))==58)
+                {
+
+                }
+                num.Append((char)r);
             }
             //32~126
 
@@ -61,13 +66,13 @@ namespace LiteDatabase.CustomedCryptography
         {
             var key = GenerateFromString(Key);
             var iv = GenerateFromString(IV);
-            byte[] DATA = Encoding.UTF8.GetBytes(content);
+            byte[] DATA = Convert.FromBase64String(content);
             var result = AESDecrypt(DATA, key, iv);
             if (result == null)
             {
                 return null;
             }
-            return Convert.ToBase64String(result);
+            return Encoding.UTF8.GetString(result);
         }
         public static byte[] AESEncrypt(byte[] data, byte[] key, byte[] vector)
         {

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LiteDatabase\LiteDatabase.csproj" />
+    <ProjectReference Include="..\L2KDB.Server\L2KDB.Server.csproj" />
   </ItemGroup>
 
 </Project>

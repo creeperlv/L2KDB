@@ -15,11 +15,13 @@ namespace LiteDatabase
     {
         DatabaseMode LoadMode;
         public readonly string Flavor = "Original";
-        public readonly Version DatabaseVersion = new Version(1, 0, 2, 0);
+        public readonly static Version DatabaseVersion = new Version(1, 0, 2, 0);
         public CryptographyCredential cryptographyCredential = new CryptographyCredential();
         public DirectoryInfo HomeDirectory = new DirectoryInfo("./Databases/");
+        public string givenHome = "";
         public Database(String Home="./Databases/",DatabaseMode loadMode = DatabaseMode.OnDemand,CryptographyCredential cryptographyCredential= null)
         {
+            givenHome = Home;
             if (cryptographyCredential == null)
             {
                 this.cryptographyCredential = new CryptographyCredential();
