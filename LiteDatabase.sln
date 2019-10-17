@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LiteDatabase.Test.NetCore",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "L2KDB.Server", "L2KDB.Server\L2KDB.Server.csproj", "{46125144-3EE4-480F-8F7C-1AE15C0590E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "L2KDB.Server.Test", "L2KDB.Server.Test\L2KDB.Server.Test.csproj", "{09FA91CF-3065-481D-A158-8735DB863937}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "L2KDB.Server.Test", "L2KDB.Server.Test\L2KDB.Server.Test.csproj", "{09FA91CF-3065-481D-A158-8735DB863937}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "L2KDB.Server.Config", "L2KDB.Server.Config\L2KDB.Server.Config.csproj", "{BEABFA60-1C2D-470E-B520-95D8EABC3954}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{09FA91CF-3065-481D-A158-8735DB863937}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09FA91CF-3065-481D-A158-8735DB863937}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{09FA91CF-3065-481D-A158-8735DB863937}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEABFA60-1C2D-470E-B520-95D8EABC3954}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEABFA60-1C2D-470E-B520-95D8EABC3954}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEABFA60-1C2D-470E-B520-95D8EABC3954}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEABFA60-1C2D-470E-B520-95D8EABC3954}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
