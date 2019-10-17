@@ -1,11 +1,12 @@
-﻿using LiteDatabase;
+﻿using L2KDB.Server.Core.CommandSets;
+using LiteDatabase;
 using System;
 
 namespace L2KDB.Server.Config
 {
     class Program
     {
-        static void MainScene()
+        static void SetAdmin()
         {
             Console.Clear();
             Console.WriteLine("L2KDB - Local 2-Key Database");
@@ -14,10 +15,27 @@ namespace L2KDB.Server.Config
             var usr = Console.ReadLine();
             Console.WriteLine("Enter password:");
             var pwd = Console.ReadLine();
-            database.OpenForm("");
+            database.OpenForm("Permissions");
+            database.Save(Authentication.ObtainID(usr, pwd), "AdminAccess", "" + true);
+            scene = 0;
+        }
+        static void SetPermission()
+        {
+            Console.Clear();
+            Console.WriteLine("L2KDB - Local 2-Key Database");
+            Console.WriteLine("Set An Administrator");
+            Console.WriteLine("Enter user name:");
+            var usr = Console.ReadLine();
+            Console.WriteLine("Enter password:");
+            var pwd = Console.ReadLine();
+            Console.WriteLine("Enter Permission Name:");
+            var p = Console.ReadLine();
+            database.OpenForm("Permissions");
+            database.Save(Authentication.ObtainID(usr, pwd), p, "" + true); 
+            scene = 0;
         }
         static Database database = new Database("./Server-Config");
-        static void SetAdmin()
+        static void MainScene()
         {
             Console.Clear();
             Console.WriteLine("L2KDB - Local 2-Key Database");
@@ -26,7 +44,7 @@ namespace L2KDB.Server.Config
             Console.WriteLine("2 - Add An Permission to An AuthID");
             Console.WriteLine("3 - Add Permission 'FullDBAccess' to An AuthID");
             Console.WriteLine("4 - Set IP address will be used in next launch");
-            var option=Console.ReadLine();
+            var option = Console.ReadLine();
             try
             {
                 var targetScene = int.Parse(option);
@@ -55,6 +73,11 @@ namespace L2KDB.Server.Config
                     case 1:
                         {
                             SetAdmin();
+                        }
+                        break;
+                    case 2:
+                        {
+                            SetPermission();
                         }
                         break;
                     default:
