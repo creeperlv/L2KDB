@@ -40,7 +40,7 @@ namespace L2KDB.Server.Test
                     Console.WriteLine($"Obtain:{SessionID}\t{Key}\t{IV}");
                     {
 
-                        AdvancedStream.SendMessage(ref streamWriter, "L2KDB:Basic:GetDatabaseVersion" + SessionID, aes);
+                        AdvancedStream.SendMessage(ref streamWriter, "L2KDB:Basic:GetDatabaseVersion|" + SessionID, aes);
                         Console.WriteLine(AdvancedStream.ReadToCurrentEnd(ref streamReader, aes));
                     }
                     {

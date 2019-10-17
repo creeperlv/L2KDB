@@ -17,12 +17,17 @@ namespace L2KDB.Server.Core
         {
             {
                 //Init
-                BasicCommandSet.Functions.Add("OpenDatabase", (List<string> para, string content, Session session) => {
+                BasicCommandSet.Functions.Add("OpenDatabase", (List<string> para, string content, Session session) =>
+                {
+                    string calculatedID = "";
+                    {
+                        calculatedID = Authentication.ObtainDBID(para[0], para[1], para[2]);
+                    }
                     foreach (var item in VariablesPool.Databases)
                     {
-                        if (item.givenHome == "./Databases/"+para[0])
+                        if (item.GeneratedID == calculatedID)
                         {
-                            if (FindPermission(session.AuthID, "Database->"+item.givenHome))
+                            if (FindPermission(session.AuthID, "Database->" + para[0]))
                             {
                                 session.operatingBD = item;
                                 return "L2KDB:Basic:DatabaseOpen";
@@ -41,11 +46,12 @@ namespace L2KDB.Server.Core
                     if (Directory.Exists("./Databases/" + para[0]))
                     {
 
-                        if (FindPermission(session.AuthID, "Database->" + "./Databases/" + para[0]))
+                        if (FindPermission(session.AuthID, "Database->" + para[0]))
                         {
                             //session.operatingBD = item;
                             Database database = new Database("./Databases/" + para[0]);
                             VariablesPool.Databases.Add(database);
+                            database.GeneratedID = calculatedID;
                             session.operatingBD = database;
                             return "L2KDB:Basic:DatabaseOpen";
                         }
@@ -53,6 +59,7 @@ namespace L2KDB.Server.Core
                         {
                             Database database = new Database("./Databases/" + para[0]);
                             VariablesPool.Databases.Add(database);
+                            database.GeneratedID = calculatedID;
                             session.operatingBD = database;
                             return "L2KDB:Basic:DatabaseOpen";
                         }
@@ -83,7 +90,7 @@ namespace L2KDB.Server.Core
         {
             InitBasicCommands();
         }
-        public static bool FindPermission(string AuthID,string PermissionID)
+        public static bool FindPermission(string AuthID, string PermissionID)
         {
             try
             {

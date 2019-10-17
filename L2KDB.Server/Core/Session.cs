@@ -49,7 +49,7 @@ namespace L2KDB.Server.Core
         }
         public async void SessionWorker()
         {
-
+            Console.WriteLine("Session Opened:"+SessionID+", AuthID="+AuthID);
             SessionKey = CustomedAES.GenerateKey();
             SessionIV = CustomedAES.GenerateIV();
             CustomedAES.Key = SessionKey;
