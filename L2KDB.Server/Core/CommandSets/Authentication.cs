@@ -24,8 +24,8 @@ namespace L2KDB.Server.Core.CommandSets
             {
                 vs[i] = (byte)IntID[i];
             }
-            generatedID = Convert.ToBase64String(vs).Replace('/', '_');
-            return generatedID;
+            generatedID = Convert.ToBase64String(vs);
+            return generatedID.Replace('/', '_');
         }
         public static string ObtainID(string usr,string key)
         {
@@ -40,8 +40,8 @@ namespace L2KDB.Server.Core.CommandSets
             {
                 vs[i] = (byte)IntID[i];
             }
-            generatedID = Convert.ToBase64String(vs).Replace('/','_');
-            return generatedID;
+            generatedID = Convert.ToBase64String(vs);
+            return generatedID.Replace('/', '_');
         }
     }
 }

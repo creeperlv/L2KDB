@@ -11,8 +11,8 @@ namespace LiteDatabase.CustomedCryptography
     public class CryptographyCredential
     {
         public CryptographtType CryptographtType { get; set; } = CryptographtType.None;
-        public string Key { get; set; }
-        public string IV { get; set; }
+        public string Key { get; set; } = "";
+        public string IV { get; set; } = "";
 
         public CryptographyCredential()
         {

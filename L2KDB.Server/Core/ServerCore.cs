@@ -8,6 +8,7 @@ using L2KDB.Server.Core.CommandSets;
 using LiteDatabase;
 using System.Threading.Tasks;
 using L2KDB.Server.Utils.IO;
+using LiteDatabase.CustomedCryptography;
 
 namespace L2KDB.Server.Core
 {
@@ -29,11 +30,17 @@ namespace L2KDB.Server.Core
                         {
                             if (FindPermission(session.AuthID, "Database->" + para[0]))
                             {
+                                session.DatabaseAES = new LiteDatabase.CustomedCryptography.CustomedAES();
+                                session.DatabaseAES.Key = para[1];
+                                session.DatabaseAES.IV = para[2];
                                 session.operatingBD = item;
                                 return "L2KDB:Basic:DatabaseOpen";
                             }
                             else if (FindPermission(session.AuthID, "FullDBAccess"))
                             {
+                                session.DatabaseAES = new LiteDatabase.CustomedCryptography.CustomedAES();
+                                session.DatabaseAES.Key = para[1];
+                                session.DatabaseAES.IV = para[2];
                                 session.operatingBD = item;
                                 return "L2KDB:Basic:DatabaseOpen";
                             }
@@ -48,19 +55,36 @@ namespace L2KDB.Server.Core
 
                         if (FindPermission(session.AuthID, "Database->" + para[0]))
                         {
-                            //session.operatingBD = item;
-                            Database database = new Database("./Databases/" + para[0]);
+                            //session.operatingBD = item;if (para[1] != "")
+                            CryptographyCredential cc = null;
+                            if (para[1] != "")
+                            {
+                                cc = new CryptographyCredential(CryptographtType.AES, para[1], para[2]);
+                            }
+                            Database database = new Database("./Databases/" + para[0], cryptographyCredential: cc);
                             VariablesPool.Databases.Add(database);
                             database.GeneratedID = calculatedID;
                             session.operatingBD = database;
+                            session.DatabaseAES = new CustomedAES();
+                            session.DatabaseAES.Key = para[1];
+                            session.DatabaseAES.IV = para[2];
+
                             return "L2KDB:Basic:DatabaseOpen";
                         }
                         else if (FindPermission(session.AuthID, "FullDBAccess"))
                         {
-                            Database database = new Database("./Databases/" + para[0]);
+                            CryptographyCredential cc = null;
+                            if (para[1] != "")
+                            {
+                                cc = new CryptographyCredential(CryptographtType.AES, para[1], para[2]);
+                            }
+                            Database database = new Database("./Databases/" + para[0], cryptographyCredential: cc);
                             VariablesPool.Databases.Add(database);
                             database.GeneratedID = calculatedID;
                             session.operatingBD = database;
+                            session.DatabaseAES = new CustomedAES();
+                            session.DatabaseAES.Key = para[1];
+                            session.DatabaseAES.IV = para[2];
                             return "L2KDB:Basic:DatabaseOpen";
                         }
                         else
@@ -73,15 +97,157 @@ namespace L2KDB.Server.Core
                         return "L2KDB:Basic:DatabaseNoFound";
                     }
                 });
-                BasicCommandSet.Functions.Add("OpenForm", (List<string> para, string content, Session session) => { return ""; });
-                BasicCommandSet.Functions.Add("Query", (List<string> para, string content, Session session) => { return ""; });
-                BasicCommandSet.Functions.Add("Save", (List<string> para, string content, Session session) => { return ""; });
-                BasicCommandSet.Functions.Add("DeleteID2", (List<string> para, string content, Session session) => { return ""; });
-                BasicCommandSet.Functions.Add("DeleteID1", (List<string> para, string content, Session session) => { return ""; });
-                BasicCommandSet.Functions.Add("DeleteForm", (List<string> para, string content, Session session) => { return ""; });
+                BasicCommandSet.Functions.Add("OpenForm", (List<string> para, string content, Session session) => {
+                    if (FindPermission(session.AuthID, "FullDBAccess") || FindPermission(session.AuthID, "CreateDatabase"))
+                    {
+                        try
+                        {
+                            session.operatingBD.OpenForm(para[0]);
+                        }
+                        catch (Exception)
+                        {
+                            return "L2KDB:Basic:ErrorOnDatabaseCreation";
+                        }
+                        return "L2KDB:Basic:DatabaseCreated";
+                    }
+                    else
+                    {
+
+                        return "L2KDB:Basic:AccessForbidden";
+                    }
+                });
+                BasicCommandSet.Functions.Add("CreateDatabase", (List<string> para, string content, Session session) =>
+                {
+                    if (FindPermission(session.AuthID, "FullDBAccess") || FindPermission(session.AuthID, "CreateDatabase"))
+                    {
+                        try
+                        {
+                            Directory.CreateDirectory("./Databases/" + para[0]);
+                        }
+                        catch (Exception)
+                        {
+                            return "L2KDB:Basic:ErrorOnDatabaseCreation";
+                        }
+                        return "L2KDB:Basic:DatabaseCreated";
+                    }
+                    else
+                    {
+
+                        return "L2KDB:Basic:AccessForbidden";
+                    }
+                });
+                BasicCommandSet.Functions.Add("Query", (List<string> para, string content, Session session) =>
+                {
+                    if (FindPermission(session.AuthID, "Database->" + session.operatingBD.HomeDirectory.Name) || FindPermission(session.AuthID, "FullDBAccess"))
+                    {
+                        var data = session.operatingBD.Query(para[0], para[1]);
+                        session.SendData("L2KDB:Basic:DatabaseQueryResult\r\n" + data);
+                    }
+                    return "";
+                });
+                BasicCommandSet.Functions.Add("Save", (List<string> para, string content, Session session) =>
+                {
+                    //L2KDB:Basic:Save,|[Session]|
+                    if (FindPermission(session.AuthID, "Database->" + session.operatingBD.HomeDirectory.Name) || FindPermission(session.AuthID, "FullDBAccess"))
+                    {
+                        session.operatingBD.Save(para[0], para[1], content);
+                    }
+                    return "L2KDB:Basic:AccessForbidden";
+                });
+                BasicCommandSet.Functions.Add("DeleteID2", (List<string> para, string content, Session session) =>
+                {
+                    if (FindPermission(session.AuthID, "Database->" + session.operatingBD.HomeDirectory.Name) || FindPermission(session.AuthID, "FullDBAccess"))
+                    {
+                        try
+                        {
+
+                            session.operatingBD.Remove(para[0], para[1]);
+                            return "L2KDB:Basic:OperationCompleted";
+                        }
+                        catch (Exception)
+                        {
+                            return "L2KDB:Basic:OperationError";
+                        }
+                    }
+                    return "L2KDB:Basic:AccessForbidden";
+                });
+                BasicCommandSet.Functions.Add("DeleteID1", (List<string> para, string content, Session session) => {
+                    if (FindPermission(session.AuthID, "Database->" + session.operatingBD.HomeDirectory.Name) || FindPermission(session.AuthID, "FullDBAccess"))
+                    {
+                        try
+                        {
+
+                            session.operatingBD.RemoveID1(para[0]);
+                            return "L2KDB:Basic:OperationCompleted";
+                        }
+                        catch (Exception)
+                        {
+                            return "L2KDB:Basic:OperationError";
+                        }
+                    }
+                    return "L2KDB:Basic:AccessForbidden";
+                });
+                BasicCommandSet.Functions.Add("DeleteForm", (List<string> para, string content, Session session) => {
+                    if (FindPermission(session.AuthID, "Database->" + session.operatingBD.HomeDirectory.Name) || FindPermission(session.AuthID, "FullDBAccess"))
+                    {
+                        try
+                        {
+
+                            session.operatingBD.DeleteForm(para[0]);
+                            return "L2KDB:Basic:OperationCompleted";
+                        }
+                        catch (Exception)
+                        {
+                            return "L2KDB:Basic:OperationError";
+                        }
+                    }
+                    return "L2KDB:Basic:AccessForbidden";
+                });
                 BasicCommandSet.Functions.Add("GetDatabaseVersion", (List<string> para, string content, Session session) =>
                 {
                     return Database.DatabaseVersion.ToString();
+                });
+            }
+        }void InitAdminCommands()
+        {
+            {
+                //Init
+                AdminCommandSet.Functions.Add("OpenForm", (List<string> para, string content, Session session) => {
+                    if (FindPermission(session.AuthID, "AdminAccess"))
+                    {
+                        try
+                        {
+                            ServerConfig.OpenForm(para[0]);
+                        }
+                        catch (Exception)
+                        {
+                            return "L2KDB:Basic:ErrorOnDatabaseCreation";
+                        }
+                        return "L2KDB:Basic:DatabaseCreated";
+                    }
+                    else
+                    {
+
+                        return "L2KDB:Basic:AccessForbidden";
+                    }
+                });
+                AdminCommandSet.Functions.Add("Query", (List<string> para, string content, Session session) =>
+                {
+                    if (FindPermission(session.AuthID, "AdminAccess"))
+                    {
+                        var data= ServerConfig.Query(para[0], para[1]);
+                        session.SendData("L2KDB:Basic:DatabaseQueryResult\r\n" + data);
+                    }
+                    return "";
+                });
+                AdminCommandSet.Functions.Add("Save", (List<string> para, string content, Session session) =>
+                {
+                    //L2KDB:Basic:Save,|[Session]|
+                    if (FindPermission(session.AuthID, "AdminAccess"))
+                    {
+                        ServerConfig.Save(para[0], para[1], content);
+                    }
+                    return "L2KDB:Basic:AccessForbidden";
                 });
             }
         }
@@ -89,6 +255,7 @@ namespace L2KDB.Server.Core
         public ServerCore()
         {
             InitBasicCommands();
+            InitAdminCommands();
         }
         public static bool FindPermission(string AuthID, string PermissionID)
         {
@@ -129,6 +296,8 @@ namespace L2KDB.Server.Core
             }
             SessionPool.Clear();
             ServerConfig.OpenForm("Permissions");
+            //ServerConfig.Save("WRM9Sh02BjJBLl4VOjULUQ==", "FullDBAccess", "" + true);
+            //ServerConfig.Save("WRM9Sh02BjJBLl4VOjULUQ==", "AdminAccess", "" + true);
             var ip = IPAddress.Parse(ipadd);
             var Endpoint = new IPEndPoint(ip, port);
             Listener = new TcpListener(Endpoint);
@@ -148,7 +317,7 @@ namespace L2KDB.Server.Core
                 {
                     //Example
                     //L2KDB:Basic:OpenSession|CreeperLv|123456
-                    Session session = new Session(request, streamReader, stream) { AuthID = Authentication.ObtainID(req[1], req[2]) };
+                    Session session = new Session(request, streamReader, stream, Authentication.ObtainID(req[1], req[2])) { };
                     SessionPool.Add(session);
                 }
             }

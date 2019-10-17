@@ -26,8 +26,9 @@ namespace L2KDB.Server.Core
         String SessionIV = "";
         public String AuthID="";
         public Database operatingBD;
-        public Session(TcpClient client, StreamReader reader, Stream originalStream)
+        public Session(TcpClient client, StreamReader reader, Stream originalStream,string AuthID)
         {
+            this.AuthID = AuthID;
             Client = client;
             Reader = reader;
             OriginalStream = originalStream;
@@ -36,16 +37,14 @@ namespace L2KDB.Server.Core
         }
         Guid SessionID;
         CustomedAES CustomedAES = new CustomedAES();
+        public CustomedAES DatabaseAES = new CustomedAES();
         public async Task SendDataAsync(string Data)
         {
-            await Writer.WriteAsync(CustomedAES.Encrypt(Data));
-            await Writer.FlushAsync();
-
+            AdvancedStream.SendMessage(ref Writer, Data, CustomedAES);
         }
         public void SendData(String Data)
         {
-            Writer.Write(CustomedAES.Encrypt(Data));
-            Writer.Flush();
+            AdvancedStream.SendMessage(ref Writer, Data, CustomedAES);
         }
         public async void SessionWorker()
         {
@@ -69,7 +68,7 @@ namespace L2KDB.Server.Core
                      * en...
                      * t]
                      **/
-                    Console.WriteLine("Command:"+Command);
+                    Console.WriteLine($"Command from {SessionID}:"+Command);
                     var cmd=Command.Split('|');
                     if (cmd[1] != SessionID.ToString())
                     {
@@ -77,8 +76,10 @@ namespace L2KDB.Server.Core
                     }
                     
                     var result = CmdletProcesser(cmd, data);
-                    Console.WriteLine(result);
-                    AdvancedStream.SendMessage(ref Writer, $"L2KDB:Basic:CommandComplete|{SessionID}{Environment.NewLine}{result}", CustomedAES);
+                    if (result != "-1")
+                    {
+                        AdvancedStream.SendMessage(ref Writer, $"L2KDB:Basic:CommandComplete|{SessionID}{Environment.NewLine}{result}", CustomedAES);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -97,7 +98,7 @@ namespace L2KDB.Server.Core
                     else
                     {
 
-                        Console.WriteLine(e.Message);
+                        Console.WriteLine("Captured:"+e.Message);
                     }
                 }
             }
@@ -105,17 +106,14 @@ namespace L2KDB.Server.Core
         String CmdletProcesser(string[] cmdlet,string content)
         {
             var cmd = cmdlet[0].Split(':');
-            Console.WriteLine("Command:" + cmdlet[0]+$",{cmd[0]},{cmd[1]},{cmd[2]}");
             switch (cmd[0])
             {
                 case "L2KDB":
                     if (cmd[1] == "Basic")
                     {
                         var cmd3 = cmd[2].Split(',').ToList();
-                        Console.WriteLine($"Command:{cmd3[0]}");
                         var cmdc = cmd3[0];
                         cmd3.RemoveAt(0);
-                        Console.WriteLine($"Calling...");
                         return BasicCommandSet.Functions[cmdc](cmd3,content,this);
                     }
                     break;

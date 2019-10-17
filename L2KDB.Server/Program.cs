@@ -11,6 +11,7 @@ namespace L2KDB.Server
             Console.WriteLine("Local 2-Key Database Server");
             ServerCore core = new ServerCore();
             core.Start();
+            
             Console.ReadLine();
             
         }

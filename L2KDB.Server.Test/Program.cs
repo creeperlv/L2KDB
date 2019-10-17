@@ -12,7 +12,7 @@ namespace L2KDB.Server.Test
         static void Main(string[] args)
         {
             TcpClient client = new TcpClient();
-            client.Connect("192.168.1.101", 9341);
+            client.Connect("127.0.0.1", 9341);
             var s = client.GetStream();
             StreamWriter streamWriter = new StreamWriter(s);
             {
