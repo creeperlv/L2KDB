@@ -74,8 +74,7 @@ namespace L2KDB.Server.Core
                 BasicCommandSet.Functions.Add("DeleteForm", (List<string> para, string content, Session session) => { return ""; });
                 BasicCommandSet.Functions.Add("GetDatabaseVersion", (List<string> para, string content, Session session) =>
                 {
-                    Console.WriteLine("Sending Version...");
-                    return "1.0.0.0";
+                    return Database.DatabaseVersion.ToString();
                 });
             }
         }

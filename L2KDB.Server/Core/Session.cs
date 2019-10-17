@@ -14,7 +14,7 @@ namespace L2KDB.Server.Core
 {
     public enum StopReason
     {
-        Unknown, Banned, AccessForbidden, ShutdownServer
+        Unknown, Banned, AccessForbidden, ShutdownServer,SessionIDChanged
     }
     public class Session
     {
@@ -71,6 +71,11 @@ namespace L2KDB.Server.Core
                      **/
                     Console.WriteLine("Command:"+Command);
                     var cmd=Command.Split('|');
+                    if (cmd[1] != SessionID.ToString())
+                    {
+                        Stop(StopReason.Unknown);
+                    }
+                    
                     var result = CmdletProcesser(cmd, data);
                     Console.WriteLine(result);
                     AdvancedStream.SendMessage(ref Writer, $"L2KDB:Basic:CommandComplete|{SessionID}{Environment.NewLine}{result}", CustomedAES);

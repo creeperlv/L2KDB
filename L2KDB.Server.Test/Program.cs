@@ -12,11 +12,11 @@ namespace L2KDB.Server.Test
         static void Main(string[] args)
         {
             TcpClient client = new TcpClient();
-            client.Connect("127.0.0.1", 9341);
+            client.Connect("192.168.1.101", 9341);
             var s = client.GetStream();
             StreamWriter streamWriter = new StreamWriter(s);
             {
-                AdvancedStream.SendMessage(ref streamWriter,"L2KDB:Basic:OpenSession|1909853U-I011-0023|Creeper Lv\r\nL2KDB:Basic:EndOfCurrentTransmission");
+                AdvancedStream.SendMessage(ref streamWriter, "L2KDB:Basic:OpenSession|1909853U-I011-0023|Creeper Lv\r\nL2KDB:Basic:EndOfCurrentTransmission");
                 //streamWriter.Flush();
 
             }
@@ -36,10 +36,18 @@ namespace L2KDB.Server.Test
                     Key = c[2];
                     IV = c[3];
                     aes.Key = Key;
-                    aes.IV= IV;
+                    aes.IV = IV;
                     Console.WriteLine($"Obtain:{SessionID}\t{Key}\t{IV}");
-                    AdvancedStream.SendMessage(ref streamWriter, "L2KDB:Basic:GetDatabaseVersion", aes);
-                    Console.WriteLine(AdvancedStream.ReadToCurrentEnd(ref streamReader, aes));
+                    {
+
+                        AdvancedStream.SendMessage(ref streamWriter, "L2KDB:Basic:GetDatabaseVersion" + SessionID, aes);
+                        Console.WriteLine(AdvancedStream.ReadToCurrentEnd(ref streamReader, aes));
+                    }
+                    {
+
+                        AdvancedStream.SendMessage(ref streamWriter, "L2KDB:Basic:OpenDatabase,TestDataBase,,|"+SessionID, aes);
+                        Console.WriteLine(AdvancedStream.ReadToCurrentEnd(ref streamReader, aes));
+                    }
                 }
                 else
                 {
