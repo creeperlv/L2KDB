@@ -51,13 +51,11 @@ namespace L2KDB.Server.Utils.IO
         {
             string content = "";
             string tmp;
-            //Console.WriteLine("Start to Read.");
             while (true)
             {
                 try
                 {
                     tmp = aes.Decrypt(streamReader.ReadLine());
-                    //Console.WriteLine(tmp);
                     if (tmp == "")
                     {
                         break;
@@ -85,7 +83,6 @@ namespace L2KDB.Server.Utils.IO
                     break;
                 }
             }
-            //Console.WriteLine("End.");
             return content;
         }
         public static void SendMessage(ref StreamWriter streamWriter,string content)
@@ -96,7 +93,6 @@ namespace L2KDB.Server.Utils.IO
         {
             string res = aes.Encrypt(content);
 
-            //Console.WriteLine(res+"="+content);
             streamWriter.WriteLine(res+ streamWriter.NewLine + aes.Encrypt("L2KDB:Basic:EndOfCurrentTransmission"));
             streamWriter.Flush();
         }
