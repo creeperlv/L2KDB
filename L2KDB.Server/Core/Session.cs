@@ -1,6 +1,6 @@
 ﻿using L2KDB.Server.Core.CommandSets;
 using L2KDB.Server.Utils.IO;
-using LiteDatabase;
+using L2KDB.Core;
 using LiteDatabase.CustomedCryptography;
 using System;
 using System.Collections.Generic;

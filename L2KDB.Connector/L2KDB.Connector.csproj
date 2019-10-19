@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LiteDatabase\LiteDatabase.csproj" />
+    <ProjectReference Include="..\L2KDB.Server\L2KDB.Server.csproj" />
   </ItemGroup>
 
 </Project>
