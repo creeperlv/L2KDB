@@ -9,12 +9,8 @@ namespace L2KDB.Server.SConsole
         static void Main(string[] args)
         {
             Console.WriteLine("Local 2-Key Database Server");
-            
-            DirectoryInfo directoryInfo = new DirectoryInfo("ms-appdata:///");
-            Console.WriteLine("" + directoryInfo.FullName);
-            Console.WriteLine("Local 2-Key Database Server");
-            //ServerCore core = new ServerCore();
-            //core.Start();
+            ServerCore core = new ServerCore();
+            core.Start();
 
             Console.ReadLine();
 

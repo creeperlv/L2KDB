@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Net.Sockets;
 using L2KDB.Server.Utils.IO;
 
@@ -18,9 +19,12 @@ namespace L2KDB.Connector
         StreamWriter Writer;
         StreamReader Reader;
         bool isConnected = false;
-        public bool Connect(string ip, int port, string usr, string pwd)
+        public string Connect(string ip, int port, string usr, string pwd)
         {
-            tcpClient.Connect(ip, port);
+            var ips = IPAddress.Parse(ip);
+            var Endpoint = new IPEndPoint(ips, port);
+            tcpClient = new TcpClient(Endpoint);
+            //tcpClient.Connect(ip, port);
             usrname = usr;
             password = pwd;
             stream = tcpClient.GetStream();
@@ -35,11 +39,11 @@ namespace L2KDB.Connector
                 aesKey = Responses[2];
                 aesIV = Responses[3];
                 isConnected = true;
-                return true;
+                return "[S]";
             }
             else
             {
-                return false;
+                return "[F]"+Responses[0];
             }
         }
         public string OpenDatabase(string name, string key, string iv)
