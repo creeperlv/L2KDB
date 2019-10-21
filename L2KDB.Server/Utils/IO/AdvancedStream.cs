@@ -47,7 +47,7 @@ namespace L2KDB.Server.Utils.IO
             Console.WriteLine("End.");
             return content;
         }
-        public static string ReadToCurrentEnd(ref StreamReader streamReader,CustomedAES aes)
+        public static string ReadToCurrentEnd(ref StreamReader streamReader, CustomedAES aes)
         {
             string content = "";
             string tmp;
@@ -85,15 +85,23 @@ namespace L2KDB.Server.Utils.IO
             }
             return content;
         }
-        public static void SendMessage(ref StreamWriter streamWriter,string content)
+        public static void SendMessage(ref StreamWriter streamWriter, string content)
         {
             streamWriter.WriteLine(content + streamWriter.NewLine + "L2KDB:Basic:EndOfCurrentTransmission");
             streamWriter.Flush();
-        }public static void SendMessage(ref StreamWriter streamWriter,string content,CustomedAES aes)
+        }
+        public static void SendMessage(ref StreamWriter streamWriter, string content, CustomedAES aes)
         {
             string res = aes.Encrypt(content);
 
-            streamWriter.WriteLine(res+ streamWriter.NewLine + aes.Encrypt("L2KDB:Basic:EndOfCurrentTransmission"));
+            streamWriter.WriteLine(res + streamWriter.NewLine + aes.Encrypt("L2KDB:Basic:EndOfCurrentTransmission"));
+            streamWriter.Flush();
+        }
+        public static void SendMessage(ref StreamWriter streamWriter, string title, string content, CustomedAES aes)
+        {
+            string TitAes = aes.Encrypt(content);
+            string res = aes.Encrypt(content);
+            streamWriter.WriteLine(res + streamWriter.NewLine + aes.Encrypt("L2KDB:Basic:EndOfCurrentTransmission"));
             streamWriter.Flush();
         }
     }

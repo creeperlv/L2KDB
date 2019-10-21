@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace LiteDatabase
 {
@@ -21,7 +22,7 @@ namespace LiteDatabase
         public string givenHome = "";
         public string GeneratedID = "";
         public CustomedAES aes = new CustomedAES();
-        public Database(String Home="./Databases/",DatabaseMode loadMode = DatabaseMode.OnDemand,CryptographyCredential cryptographyCredential= null)
+        public Database(String Home = "./Databases/", DatabaseMode loadMode = DatabaseMode.OnDemand, CryptographyCredential cryptographyCredential = null)
         {
             givenHome = Home;
             if (cryptographyCredential == null)
@@ -32,7 +33,7 @@ namespace LiteDatabase
             {
                 this.cryptographyCredential = cryptographyCredential;
                 aes.Key = cryptographyCredential.Key;
-                aes.IV= cryptographyCredential.IV;
+                aes.IV = cryptographyCredential.IV;
             }
             HomeDirectory = new DirectoryInfo(Home);
             LoadMode = loadMode;
@@ -52,6 +53,15 @@ namespace LiteDatabase
                     break;
             }
         }
+        public List<String> GetForms()
+        {
+            List<string> vs = new List<string>();
+            foreach (var item in HomeDirectory.GetDirectories())
+            {
+                vs.Add(item.Name);
+            }
+            return vs;
+        }
         public void ClearForm(string formName)
         {
             DirectoryInfo directoryInfo = new DirectoryInfo(Path.Combine(HomeDirectory.FullName, formName));
@@ -67,7 +77,7 @@ namespace LiteDatabase
         }
         public void RemoveID1(string ID1)
         {
-            FileInfo directoryInfo = new FileInfo(Path.Combine(HomeDirectory.FullName,CurrentForm, ID1));
+            FileInfo directoryInfo = new FileInfo(Path.Combine(HomeDirectory.FullName, CurrentForm, ID1));
             directoryInfo.Delete();
         }
         public void ClearCurrentForm()
@@ -105,7 +115,7 @@ namespace LiteDatabase
         }
         public void ClearID1(string id1)
         {
-            File.WriteAllText(Path.Combine(HomeDirectory.FullName, CurrentForm,$"{id1}.lite-db"), $"#Database.Version:{DatabaseVersion.Build}\r\n#Form:{CurrentForm}\r\n#Flavor={Flavor}");
+            File.WriteAllText(Path.Combine(HomeDirectory.FullName, CurrentForm, $"{id1}.lite-db"), $"#Database.Version:{DatabaseVersion.Build}\r\n#Form:{CurrentForm}\r\n#Flavor={Flavor}");
         }
         string CurrentForm = "";
         public string GetCurrentFormName() => CurrentForm;
@@ -127,7 +137,7 @@ namespace LiteDatabase
                         DirectoryInfo directoryInfo = new DirectoryInfo(Path.Combine(HomeDirectory.FullName, CurrentForm));
                         foreach (var item in directoryInfo.EnumerateFiles())
                         {
-                            var id1=item.Name.Substring(0, item.Name.Length - ".lite-db".Length);
+                            var id1 = item.Name.Substring(0, item.Name.Length - ".lite-db".Length);
                             var d = LoadFile(id1);
                             data.Add(id1, d);
                         }
@@ -142,7 +152,7 @@ namespace LiteDatabase
         Dictionary<string, object> LoadFile(string name)
         {
             Dictionary<string, object> d = new Dictionary<string, object>();
-            FileInfo fi = new FileInfo(Path.Combine(FormDirectory.FullName,name + ".lite-db"));
+            FileInfo fi = new FileInfo(Path.Combine(FormDirectory.FullName, name + ".lite-db"));
             string Content = "";
             string id2 = "";
             var tR = fi.OpenText();
@@ -169,13 +179,12 @@ namespace LiteDatabase
                 {
                     if (tmp != "DATA#")
                     {
-                        if (isFSL != true)
+                        if (Content == "")
                         {
-                            Content += tmp;
+                            Content = tmp;
                         }
                         else
                         {
-
                             Content += "\r\n" + tmp;
                         }
                     }
@@ -183,12 +192,31 @@ namespace LiteDatabase
                     {
                         isFSL = true;
                         isCombine = false;
-                        d.Add(id2, aes.Decrypt(Content));
+                        if (cryptographyCredential.Key != "")
+                            d.Add(id2, aes.Decrypt(Content));
+                        else d.Add(id2, Content);
                         Content = "";
                         id2 = "";
                     }
                 }
             }
+            try
+            {
+
+                tR.Close();
+
+            }
+            catch (Exception)
+            {
+            }
+            try
+            {
+                tR.Dispose();
+            }
+            catch (Exception)
+            {
+            }
+
             return d;
         }
 
@@ -277,7 +305,7 @@ namespace LiteDatabase
                             {
                                 Console.WriteLine("Cannot find:" + id2);
                                 tR.Dispose();
-                                throw new Exception("Cannot find:"+id1+","+id2);
+                                throw new Exception("Cannot find:" + id1 + "," + id2);
                             }
                             if (isCombine == false)
                             {
@@ -290,22 +318,32 @@ namespace LiteDatabase
                             {
                                 if (tmp != "DATA#")
                                 {
-                                    if (isFSL != true)
+                                    if (Content == "")
                                     {
-                                        Content += tmp;
+                                        Content = tmp;
                                     }
                                     else
                                     {
 
+
                                         Content += "\r\n" + tmp;
+
                                     }
+                                    //if (isFSL != true)
+                                    //{
+                                    //    Content += tmp;
+                                    //}
+                                    //else
+                                    //{}
                                 }
                                 else
                                 {
                                     isCombine = false;
                                     StopReading = true;
                                     tR.Dispose();
-                                    return aes.Decrypt(Content);
+                                    if (cryptographyCredential.Key != "")
+                                        return aes.Decrypt(Content);
+                                    else return Content;
                                 }
                             }
                         }
@@ -321,7 +359,8 @@ namespace LiteDatabase
             }
             return null;
         }
-        public void Remove(string id1,string id2)
+        ReaderWriterLockSlim Locker = new ReaderWriterLockSlim();
+        public void Remove(string id1, string id2)
         {
             FileInfo fi = new FileInfo(Path.Combine(FormDirectory.FullName, id1 + ".lite-db"));
             if (!fi.Exists) fi.Create().Dispose();
@@ -355,8 +394,10 @@ namespace LiteDatabase
                 }
             }
             tR.RemoveRange(index, count);
+            //Locker.EnterWriteLock();
             File.WriteAllLines(fi.FullName, tR);
-            if(LoadMode== DatabaseMode.Cache||LoadMode== DatabaseMode.SemiCache)
+            //Locker.ExitWriteLock();
+            if (LoadMode == DatabaseMode.Cache || LoadMode == DatabaseMode.SemiCache)
             {
                 data[id1].Remove(id2);
             }
@@ -400,19 +441,46 @@ namespace LiteDatabase
                         }
                         if (index == -1)
                         {
-                            var cont = File.ReadAllText(fi.FullName);
-                            if (cont == "")
-                                File.WriteAllText(fi.FullName, $"#Database.Ver={DatabaseVersion.Build}\r\n#Form={CurrentForm}\r\n#Flavor={Flavor}\r\n#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#\r\n");
+                            if (cryptographyCredential.Key == "")
+                            {
+
+                                var cont = File.ReadAllText(fi.FullName);
+                                if (cont == "")
+                                    File.WriteAllText(fi.FullName, $"#Database.Ver={DatabaseVersion.Build}\r\n#Form={CurrentForm}{Environment.NewLine}#Flavor={Flavor}\r\n#DATA:{id2}\r\n{((string)content)}\r\nDATA#\r\n");
+                                else
+                                {
+                                    File.AppendAllText(fi.FullName, $"#DATA:{id2}{Environment.NewLine}{((string)content)}\r\nDATA#\r\n");
+                                }
+                            }
                             else
                             {
-                                File.AppendAllText(fi.FullName, $"#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#\r\n");
+                                var cont = File.ReadAllText(fi.FullName);
+                                if (cont == "")
+                                    File.WriteAllText(fi.FullName, $"#Database.Ver={DatabaseVersion.Build}\r\n#Form={CurrentForm}\r\n#Flavor={Flavor}\r\n#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#\r\n");
+                                else
+                                {
+                                    File.AppendAllText(fi.FullName, $"#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#\r\n");
+                                }
                             }
                         }
                         else
                         {
-                            tR.RemoveRange(index, count);
-                            tR.Insert(index, $"#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#");
-                            File.WriteAllLines(fi.FullName, tR);
+                            if (cryptographyCredential.Key == "")
+                            {
+                                tR.RemoveRange(index, count);
+                                tR.Insert(index, $"#DATA:{id2}\r\n{((string)content)}\r\nDATA#");
+                                //Locker.EnterWriteLock();
+                                File.WriteAllLines(fi.FullName, tR);
+                                //Locker.ExitWriteLock();
+                            }
+                            else
+                            {
+
+                                tR.RemoveRange(index, count);
+                                tR.Insert(index, $"#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#");
+                                File.WriteAllLines(fi.FullName, tR);
+
+                            }
                         }
                     }
                     break;
@@ -420,6 +488,7 @@ namespace LiteDatabase
 
                     {
                         FileInfo fi = new FileInfo(Path.Combine(FormDirectory.FullName, id1 + ".lite-db"));
+
                         if (!fi.Exists) fi.Create().Dispose();
                         var tR = File.ReadAllLines(fi.FullName).ToList();
                         int length = tR.Count;
@@ -452,19 +521,45 @@ namespace LiteDatabase
                         }
                         if (index == -1)
                         {
-                            var cont = File.ReadAllText(fi.FullName);
-                            if (cont == "")
-                                File.WriteAllText(fi.FullName, $"#Database.Ver={DatabaseVersion.Build}\r\n#Form={CurrentForm}\r\n#Flavor={Flavor}\r\n#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#\r\n");
+                            if (cryptographyCredential.Key == "")
+                            {
+
+                                var cont = File.ReadAllText(fi.FullName);
+                                if (cont == "")
+                                    File.WriteAllText(fi.FullName, $"#Database.Ver={DatabaseVersion.Build}\r\n#Form={CurrentForm}\r\n#Flavor={Flavor}\r\n#DATA:{id2}\r\n{((string)content)}\r\nDATA#\r\n");
+                                else
+                                {
+                                    File.AppendAllText(fi.FullName, $"#DATA:{id2}\r\n{(string)content}\r\nDATA#\r\n");
+                                }
+                            }
                             else
                             {
-                                File.AppendAllText(fi.FullName, $"#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#\r\n");
+
+                                var cont = File.ReadAllText(fi.FullName);
+                                if (cont == "")
+                                    File.WriteAllText(fi.FullName, $"#Database.Ver={DatabaseVersion.Build}\r\n#Form={CurrentForm}\r\n#Flavor={Flavor}\r\n#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#\r\n");
+                                else
+                                {
+                                    File.AppendAllText(fi.FullName, $"#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#\r\n");
+                                }
                             }
                         }
                         else
                         {
-                            tR.RemoveRange(index, count);
-                            tR.Insert(index, $"#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#");
-                            File.WriteAllLines(fi.FullName, tR);
+                            if (cryptographyCredential.Key == "")
+                            {
+                                tR.RemoveRange(index, count);
+                                tR.Insert(index, $"#DATA:{id2}\r\n{((string)content)}\r\nDATA#");
+
+                                File.WriteAllLines(fi.FullName, tR);
+                            }
+                            else
+                            {
+
+                                tR.RemoveRange(index, count);
+                                tR.Insert(index, $"#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#");
+                                File.WriteAllLines(fi.FullName, tR);
+                            }
                         }
                         if (data.ContainsKey(id1))
                         {

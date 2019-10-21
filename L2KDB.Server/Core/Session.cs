@@ -46,16 +46,22 @@ namespace L2KDB.Server.Core
         {
             AdvancedStream.SendMessage(ref Writer, Data, CustomedAES);
         }
+        public void SendData(string title,String Data)
+        {
+            AdvancedStream.SendMessage(ref Writer,title, Data, CustomedAES);
+        }
+        bool willStop = false;
         public async void SessionWorker()
         {
+            SessionID = Guid.NewGuid();
             Console.WriteLine("Session Opened:"+SessionID+", AuthID="+AuthID);
             SessionKey = CustomedAES.GenerateKey();
             SessionIV = CustomedAES.GenerateIV();
             CustomedAES.Key = SessionKey;
             CustomedAES.IV = SessionIV;
-            SessionID = Guid.NewGuid();
+            int ExceptionOccurred = 0;
             AdvancedStream.SendMessage(ref Writer,"L2KDB:Basic:ConnectionAccept,"+SessionID.ToString()+$",{SessionKey},{SessionIV}");
-            while (true)
+            while (willStop==false)
             {
                 try
                 {
@@ -78,7 +84,7 @@ namespace L2KDB.Server.Core
                     var result = CmdletProcesser(cmd, data);
                     if (result != "-1")
                     {
-                        AdvancedStream.SendMessage(ref Writer, $"L2KDB:Basic:CommandComplete|{SessionID}{Environment.NewLine}{result}", CustomedAES);
+                        AdvancedStream.SendMessage(ref Writer, $"{result}", CustomedAES);
                     }
                 }
                 catch (Exception e)
@@ -97,8 +103,13 @@ namespace L2KDB.Server.Core
                     }
                     else
                     {
-
+                        ExceptionOccurred++;
                         Console.WriteLine("Captured:"+e.Message);
+                        if (ExceptionOccurred >= 100)
+                        {
+                            Console.WriteLine($"Session:{SessionID} occurred too many errors, force to shutdown.");
+                            Stop();
+                        }
                     }
                 }
             }
@@ -125,6 +136,7 @@ namespace L2KDB.Server.Core
         }
         public void Stop(StopReason stopReason = StopReason.ShutdownServer)
         {
+            willStop = true;
             try
             {
 

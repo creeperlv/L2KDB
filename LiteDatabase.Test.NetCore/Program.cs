@@ -9,13 +9,15 @@ namespace LiteDatabase.Test.NetCore
     {
         static void Main(string[] args)
         {
-            CustomedAES customedAES = new CustomedAES();
-            Console.WriteLine(CustomedAES.GenerateKey());
+            //CustomedAES customedAES = new CustomedAES();
+            //Console.WriteLine(CustomedAES.GenerateKey());
 
             //Console.WriteLine((new DirectoryInfo("./").FullName));
-            //Database liteDatabase = new Database(loadMode: DatabaseMode.OnDemand);
-            //liteDatabase.OpenForm();
-
+            Database liteDatabase = new Database(loadMode: DatabaseMode.Cache);
+            liteDatabase.OpenForm();
+            liteDatabase.Save("id1.1", "id2.1","TEST_MESSAGE");
+            liteDatabase.Save("id1.1", "id2.2","TEST_MESSAGE");
+            liteDatabase.Save("id1.1", "id2.0","TEST_MESSAGE");
             //Console.WriteLine("Test LiteDatabase");
             //Console.WriteLine("Pressure Test");
             //Console.WriteLine("Please enter id1 length:");

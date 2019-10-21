@@ -155,7 +155,8 @@ namespace L2KDB.Server.Core
                     if (FindPermission(session.AuthID, "Database->" + session.operatingBD.realDB.HomeDirectory.Name) || FindPermission(session.AuthID, "FullDBAccess"))
                     {
                         var data = session.operatingBD.realDB.Query(para[0], para[1]);
-                        session.SendData("L2KDB:Basic:DatabaseQueryResult\r\n" + data);
+                        
+                        session.SendData("L2KDB:Basic:DatabaseQueryResult" , ""+data);
                     }
                     return "";
                 });
@@ -165,6 +166,7 @@ namespace L2KDB.Server.Core
                     if (FindPermission(session.AuthID, "Database->" + session.operatingBD.realDB.HomeDirectory.Name) || FindPermission(session.AuthID, "FullDBAccess"))
                     {
                         session.operatingBD.realDB.Save(para[0], para[1], content);
+                        return "L2KDB:Basic:OperationCompleted";
                     }
                     return "L2KDB:Basic:AccessForbidden";
                 });
