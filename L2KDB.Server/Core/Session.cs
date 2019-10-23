@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace L2KDB.Server.Core
 {
@@ -51,6 +52,7 @@ namespace L2KDB.Server.Core
             AdvancedStream.SendMessage(ref Writer,title, Data, CustomedAES);
         }
         bool willStop = false;
+        public string GetIPAddress()=>((IPEndPoint)Client.Client.RemoteEndPoint).Address.ToString();
         public async void SessionWorker()
         {
             SessionID = Guid.NewGuid();
