@@ -44,7 +44,6 @@ namespace L2KDB.Server.Utils.IO
                     break;
                 }
             }
-            Console.WriteLine("End.");
             return content;
         }
         public static string ReadToCurrentEnd(ref StreamReader streamReader, CustomedAES aes)

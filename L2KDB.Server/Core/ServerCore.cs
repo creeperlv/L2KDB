@@ -9,6 +9,7 @@ using L2KDB.Core;
 using System.Threading.Tasks;
 using L2KDB.Server.Utils.IO;
 using LiteDatabase.CustomedCryptography;
+using L2KDB.Server.Diagnostic;
 
 namespace L2KDB.Server.Core
 {
@@ -340,8 +341,7 @@ namespace L2KDB.Server.Core
         static LiteDatabase.Database ServerConfig = new LiteDatabase.Database("./Server-Config/", LiteDatabase.DatabaseMode.OnDemand);
         public void StopServer()
         {
-            Console.WriteLine("Force All Databases to Save Data.");
-            
+            Diagnotor.CurrentDiagnotor.Log("Force All Databases to Save Data.");
             foreach (var item in VariablesPool.Databases)
             {
                 try
@@ -352,16 +352,11 @@ namespace L2KDB.Server.Core
                 }
                 catch (Exception e)
                 {
-
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Unable to save data in datase:{item.realDB.givenHome}\r\nReason:{e.Message}");
-                    Console.ForegroundColor = ConsoleColor.White;
-
+                    Diagnotor.CurrentDiagnotor.LogError($"Unable to save data in datase:{item.realDB.givenHome}\r\nReason:{e.Message}");
                 }
             }
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Completed.");
-            Console.ForegroundColor = ConsoleColor.White;
+            Diagnotor.CurrentDiagnotor.LogSuccess("Completed.");
+
         }
         public ServerCore(string BasePath="./Databases/",string SeverConfigPath="./Server-Config/")
         {
@@ -442,7 +437,7 @@ namespace L2KDB.Server.Core
             {
                 StreamWriter streamWriter = new StreamWriter(stream);
                 streamWriter.Write("HTTP/1.1 200 OK\r\nServer: L2KDB\r\nContent-Encoding: gzip\r\nContent-Type: text/html;charset=UTF-8\r\n\r\n<!DOCTYPE html>\r\n<html><head><title>L2KDB</title></head><body><p>Wrong Handshaking Protocol.</p></html>");
-                Console.WriteLine("Sending Refuse.");
+                Diagnotor.CurrentDiagnotor.LogWarning("[WRONG CLIENT]Sending Refuse.");
                 streamWriter.Flush();
                 streamWriter.Close();
             }
@@ -451,7 +446,7 @@ namespace L2KDB.Server.Core
         {
             while (stopFlag != true)
             {
-                Console.WriteLine("Waiting for shaking hand.");
+                Diagnotor.CurrentDiagnotor.Log("Waiting for shaking hand.");
                 var request = Listener.AcceptTcpClient();
                 var r = Task.Run(() => { ProcessHandshake(request); });
 

@@ -10,6 +10,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net;
+using L2KDB.Server.Diagnostic;
 
 namespace L2KDB.Server.Core
 {
@@ -56,7 +57,7 @@ namespace L2KDB.Server.Core
         public async void SessionWorker()
         {
             SessionID = Guid.NewGuid();
-            Console.WriteLine("Session Opened:"+SessionID+", AuthID="+AuthID);
+            Diagnotor.CurrentDiagnotor.Log("Session Opened:" + SessionID + ", AuthID=" + AuthID);
             SessionKey = CustomedAES.GenerateKey();
             SessionIV = CustomedAES.GenerateIV();
             CustomedAES.Key = SessionKey;
@@ -76,7 +77,8 @@ namespace L2KDB.Server.Core
                      * en...
                      * t]
                      **/
-                    Console.WriteLine($"Command from {SessionID}:"+Command);
+                    Diagnotor.CurrentDiagnotor.Log($"Command from {SessionID}:" + Command);
+
                     var cmd=Command.Split('|');
                     if (cmd[1] != SessionID.ToString())
                     {
@@ -91,25 +93,26 @@ namespace L2KDB.Server.Core
                 }
                 catch (Exception e)
                 {
-                    if (e.GetType() == typeof(System.Net.Sockets.SocketException))
+                    if (e.GetType() == typeof(SocketException))
                     {
-                        Console.WriteLine($"Shutting {SessionID} Down.");
+                        Diagnotor.CurrentDiagnotor.Log($"Shutting {SessionID} Down.");
+
                         Stop();
                         break;
                     }
-                    else if (e.GetType() == typeof(System.IO.IOException))
+                    else if (e.GetType() == typeof(IOException))
                     {
-                        Console.WriteLine($"Shutting {SessionID} Down.");
+                        Diagnotor.CurrentDiagnotor.Log($"Shutting {SessionID} Down.");
                         Stop();
                         break;
                     }
                     else
                     {
                         ExceptionOccurred++;
-                        Console.WriteLine("Captured:"+e.Message);
+                        Diagnotor.CurrentDiagnotor.LogWarning("Captured:" + e.Message);
                         if (ExceptionOccurred >= 100)
                         {
-                            Console.WriteLine($"Session:{SessionID} occurred too many errors, force to shutdown.");
+                            Diagnotor.CurrentDiagnotor.LogError($"Session:{SessionID} occurred too many errors, force to shutdown.");
                             Stop();
                         }
                     }

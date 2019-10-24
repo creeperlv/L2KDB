@@ -9,6 +9,10 @@ namespace L2KDB.Server.SConsole
     {
         static void Main(string[] args)
         {
+            foreach (var item in args)
+            {
+
+            }
             Console.WriteLine("Local 2-Key Database Server");
             ServerCore core = new ServerCore();
             Task.Run(() => core.Start());
