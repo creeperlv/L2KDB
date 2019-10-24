@@ -67,7 +67,7 @@ namespace L2KDB.Server.UWP.ConsoleApp
                     try
                     {
 
-                        var combine = cmd.Substring("Set-Admin".Length);
+                        var combine = cmd.Substring("Set-Admin".Length).Trim();
                         var auth = combine.Split(' ');
                         core.SetAdmin(auth[0], auth[1]);
 

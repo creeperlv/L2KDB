@@ -25,7 +25,7 @@ namespace L2KDB.Server.SConsole
                     try
                     {
 
-                        var combine = cmd.Substring("Set-Admin".Length);
+                        var combine = cmd.Substring("Set-Admin".Length).Trim();
                         var auth = combine.Split(' ');
                         core.SetAdmin(auth[0], auth[1]);
                         Console.ForegroundColor = ConsoleColor.Green;
