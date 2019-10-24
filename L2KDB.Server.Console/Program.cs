@@ -28,12 +28,15 @@ namespace L2KDB.Server.SConsole
                         var combine = cmd.Substring("Set-Admin".Length);
                         var auth = combine.Split(' ');
                         core.SetAdmin(auth[0], auth[1]);
-
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine($"Set {auth[0]} to administrator.");
+                        Console.ForegroundColor = ConsoleColor.White;
                     }
                     catch (Exception e)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine($"Unable to set admin.\r\bException:{e.Message}");
+                        Console.ForegroundColor = ConsoleColor.White;
                     }
                 }
                 else
@@ -44,7 +47,9 @@ namespace L2KDB.Server.SConsole
                     }
                     else
                     {
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine($"Command: {cmd} not found!");
+                        Console.ForegroundColor = ConsoleColor.White;
                     }
                 }
             }
