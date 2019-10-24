@@ -337,11 +337,36 @@ namespace L2KDB.Server.Core
                 });
             }
         }
-        static LiteDatabase.Database ServerConfig = new LiteDatabase.Database("./Server-Config/", LiteDatabase.DatabaseMode.Cache);
+        static LiteDatabase.Database ServerConfig = new LiteDatabase.Database("./Server-Config/", LiteDatabase.DatabaseMode.OnDemand);
+        public void StopServer()
+        {
+            Console.WriteLine("Force All Databases to Save Data.");
+            
+            foreach (var item in VariablesPool.Databases)
+            {
+                try
+                {
+
+                    item.realDB.ForceProcessPueueAndEndCycle();
+
+                }
+                catch (Exception e)
+                {
+
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Unable to save data in datase:{item.realDB.givenHome}\r\nReason:{e.Message}");
+                    Console.ForegroundColor = ConsoleColor.White;
+
+                }
+            }
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Completed.");
+            Console.ForegroundColor = ConsoleColor.White;
+        }
         public ServerCore(string BasePath="./Databases/",string SeverConfigPath="./Server-Config/")
         {
             this.BasePath = BasePath;
-            ServerConfig = new LiteDatabase.Database(SeverConfigPath, LiteDatabase.DatabaseMode.Cache);
+            ServerConfig = new LiteDatabase.Database(SeverConfigPath, LiteDatabase.DatabaseMode.OnDemand);
             InitBasicCommands();
             InitAdminCommands();
         }

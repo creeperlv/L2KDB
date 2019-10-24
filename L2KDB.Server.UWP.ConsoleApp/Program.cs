@@ -59,6 +59,7 @@ namespace L2KDB.Server.UWP.ConsoleApp
                 var cmd = Console.ReadLine();
                 if (cmd.ToUpper() == "STOP")
                 {
+                    core.StopServer();
                     Environment.Exit(0);
                 }
                 else if (cmd.ToUpper().StartsWith("SET-ADMIN"))

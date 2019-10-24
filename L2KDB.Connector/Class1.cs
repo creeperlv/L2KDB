@@ -202,7 +202,7 @@ namespace L2KDB.Connector
             }
             throw new Exception("Unconnected");
         }
-        public string  Query(string id1, string id2, string content)
+        public string Query(string id1, string id2, string content)
         {
             if (isConnected == true)
             {

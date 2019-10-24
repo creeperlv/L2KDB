@@ -1,8 +1,10 @@
-﻿using LiteDatabase.CustomedCryptography;
+﻿using LiteDatabase.AdvancedCache;
+using LiteDatabase.CustomedCryptography;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,45 +14,121 @@ namespace LiteDatabase
     {
         OnDemand, Cache, SemiCache
     }
-    public class DatabaseOperationEssentialClass
-    {
-        public string id1;
-        public string id2;
-    }
-    public class DBOperationRemoveID2 : DatabaseOperationEssentialClass { }
-    public class DBOperationSave : DatabaseOperationEssentialClass
-    {
-        public string content;
-    }
     //Local Two-Key DB "L2KDB"
     public class Database
     {
         DatabaseMode LoadMode;
         public readonly string Flavor = "Original";
-        public readonly static Version DatabaseVersion = new Version(1, 0, 2, 0);
+        public readonly static Version DatabaseVersion = new Version(1, 0, 3, 0);
         public CryptographyCredential cryptographyCredential = new CryptographyCredential();
         public DirectoryInfo HomeDirectory = new DirectoryInfo("./Databases/");
         public string givenHome = "";
         public string GeneratedID = "";
         public CustomedAES aes = new CustomedAES();
-        Queue<DatabaseOperationEssentialClass> OperationQueue = new Queue<DatabaseOperationEssentialClass>();
+        Queue<DatabaseOperation> OperationQueue = new Queue<DatabaseOperation>();
+        bool willDo = false;
+        bool DoCycleQueue = true;
+        public void ForceProcessQueue()
+        {
+            willDo = true;
+        }
+        public void ForceProcessPueueAndEndCycle()
+        {
+            DoCycleQueue = false;
+            SingleCycle();
+        }
+        public void SingleCycle()
+        {
+
+            List<string> QueuedID1s = new List<string>();
+            Queue<DatabaseOperation> CopiedOperations = new Queue<DatabaseOperation>(OperationQueue.ToArray());
+            OperationQueue.Clear();// Clear the queue to receive more operation applications without data lose;
+            foreach (var item in CopiedOperations)
+            {
+                string id1 = item.id1;
+                string id2 = item.id2;
+                if (!QueuedID1s.Contains(id1)) ;
+                QueuedID1s.Add(id1);
+                //if (item.GetType() == typeof(DBOperationSave))
+                //{
+                //    //if*
+                //}
+                //else if (item.GetType() == typeof(DBOperationRemoveID2))
+                //{
+                //    //data[item.id1].Remove(item.id2);
+                //}
+            }
+            {
+                foreach (var item in QueuedID1s)
+                {
+                    //Regenerate an ID-1 file.
+                    Dictionary<string, object> OriginData = data[item];
+                    FileInfo fi = new FileInfo(Path.Combine(FormDirectory.FullName, item + ".lite-db"));
+                    File.WriteAllText(fi.FullName, "");//Clear the file.
+                    File.WriteAllText(fi.FullName, $"#Database.Ver={DatabaseVersion.Build}\r\n#Form={CurrentForm}{Environment.NewLine}#Flavor={Flavor}{Environment.NewLine}");
+                    String toWrite = "";
+                    StringBuilder builder = new StringBuilder(toWrite);
+                    var textWriter = new StringWriter(builder);
+                    foreach (var SingleData in OriginData)
+                    {
+                        textWriter.WriteLine($"#DATA:" + SingleData.Key);
+                        if (cryptographyCredential.Key == "")
+                        {
+
+                            textWriter.WriteLine((string)SingleData.Value);
+
+                        }
+                        else
+                        {
+                            textWriter.WriteLine(aes.Encrypt((string)SingleData.Value));
+                        }
+                        textWriter.WriteLine("DATA#");
+                    }
+                    File.AppendAllText(fi.FullName, builder.ToString());
+                    try
+                    {
+
+                        textWriter.Close();
+
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    try
+                    {
+
+                        textWriter.Dispose();
+
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }
+        }
         public async void CycleQueueProcessor()
         {
+            DateTime mark = DateTime.Now;
             string OperatingForm = CurrentForm;
-            while (OperatingForm==CurrentForm)
+            while (OperatingForm == CurrentForm&&DoCycleQueue==true)
             {
-                await Task.Delay(1000);
-                Queue<DatabaseOperationEssentialClass> CopiedOperations = new Queue<DatabaseOperationEssentialClass>(OperationQueue.ToArray());
-                foreach (var item in CopiedOperations)
+                if (DateTime.Now - mark >= new TimeSpan(1000))
                 {
-                    if (item.GetType() == typeof(DBOperationSave))
-                    {
+                    willDo = true;
 
-                    }
-                    else if (item.GetType() == typeof(DBOperationRemoveID2))
+                }
+                else
+                {
+                    if (OperationQueue.Count > 1000)
                     {
-
+                        willDo = true;
                     }
+                }
+                if (willDo == true)
+                {
+                    mark = DateTime.Now;
+                    willDo = false;
+                    SingleCycle();
                 }
             }
         }
@@ -394,44 +472,56 @@ namespace LiteDatabase
         ReaderWriterLockSlim Locker = new ReaderWriterLockSlim();
         public void Remove(string id1, string id2)
         {
-            FileInfo fi = new FileInfo(Path.Combine(FormDirectory.FullName, id1 + ".lite-db"));
-            if (!fi.Exists) fi.Create().Dispose();
-            var tR = File.ReadAllLines(fi.FullName).ToList();
-            int length = tR.Count;
-            bool logMode = false;
-            int count = 1;
-            int index = -1;
-            for (int i = 0; i < tR.Count; i++)
+            if (LoadMode == DatabaseMode.OnDemand)
             {
-                if (logMode == true)
+
+                FileInfo fi = new FileInfo(Path.Combine(FormDirectory.FullName, id1 + ".lite-db"));
+                if (!fi.Exists) fi.Create().Dispose();
+                var tR = File.ReadAllLines(fi.FullName).ToList();
+                int length = tR.Count;
+                bool logMode = false;
+                int count = 1;
+                int index = -1;
+                for (int i = 0; i < tR.Count; i++)
                 {
-                    count++;
-                    if (tR[i] == "DATA#")
+                    if (logMode == true)
                     {
-                        logMode = false;
-                        break;
+                        count++;
+                        if (tR[i] == "DATA#")
+                        {
+                            logMode = false;
+                            break;
+                        }
+                        else
+                        {
+                        }
                     }
                     else
                     {
-                    }
-                }
-                else
-                {
 
-                    if (tR[i] == "#DATA:" + id2)
-                    {
-                        index = i;
-                        logMode = true;
+                        if (tR[i] == "#DATA:" + id2)
+                        {
+                            index = i;
+                            logMode = true;
+                        }
                     }
                 }
+                tR.RemoveRange(index, count);
+                //Locker.EnterWriteLock();
+                File.WriteAllLines(fi.FullName, tR);
+                //Locker.ExitWriteLock();
+
             }
-            tR.RemoveRange(index, count);
-            //Locker.EnterWriteLock();
-            File.WriteAllLines(fi.FullName, tR);
-            //Locker.ExitWriteLock();
-            if (LoadMode == DatabaseMode.Cache || LoadMode == DatabaseMode.SemiCache)
+            else
+            if (LoadMode == DatabaseMode.Cache)
             {
                 data[id1].Remove(id2);
+                OperationQueue.Enqueue(new DatabaseOperation() { id1 = id1, id2 = id2 });
+            }
+            else
+            {
+                data[id1].Remove(id2);
+
             }
         }
         public bool Save(string id1, string id2, Object content)
@@ -517,100 +607,28 @@ namespace LiteDatabase
                     }
                     break;
                 case DatabaseMode.Cache:
-                    OperationQueue.Enqueue(new DBOperationSave() { id1 = id1 ,id2=id2,content=(string)content});
-                    //{
-                    //    FileInfo fi = new FileInfo(Path.Combine(FormDirectory.FullName, id1 + ".lite-db"));
 
-                    //    if (!fi.Exists) fi.Create().Dispose();
-                    //    var tR = File.ReadAllLines(fi.FullName).ToList();
-                    //    int length = tR.Count;
-                    //    bool logMode = false;
-                    //    int count = 1;
-                    //    int index = -1;
-                    //    for (int i = 0; i < tR.Count; i++)
-                    //    {
-                    //        if (logMode == true)
-                    //        {
-                    //            count++;
-                    //            if (tR[i] == "DATA#")
-                    //            {
-                    //                logMode = false;
-                    //                break;
-                    //            }
-                    //            else
-                    //            {
-                    //            }
-                    //        }
-                    //        else
-                    //        {
+                    {
+                        if (data.ContainsKey(id1))
+                        {
+                            if (data[id1].ContainsKey(id2))
+                            {
+                                data[id1][id2] = content;
+                            }
+                            else
+                            {
+                                data[id1].Add(id2, content);
+                            }
+                        }
+                        else
+                        {
+                            Dictionary<string, object> tmp = new Dictionary<string, object>();
+                            tmp.Add(id2, content);
+                            data.Add(id1, tmp);
+                        }
+                    }
+                    OperationQueue.Enqueue(new DatabaseOperation() { id1 = id1, id2 = id2 });
 
-                    //            if (tR[i] == "#DATA:" + id2)
-                    //            {
-                    //                index = i;
-                    //                logMode = true;
-                    //            }
-                    //        }
-                    //    }
-                    //    if (index == -1)
-                    //    {
-                    //        if (cryptographyCredential.Key == "")
-                    //        {
-
-                    //            var cont = File.ReadAllText(fi.FullName);
-                    //            if (cont == "")
-                    //                File.WriteAllText(fi.FullName, $"#Database.Ver={DatabaseVersion.Build}\r\n#Form={CurrentForm}\r\n#Flavor={Flavor}\r\n#DATA:{id2}\r\n{((string)content)}\r\nDATA#\r\n");
-                    //            else
-                    //            {
-                    //                File.AppendAllText(fi.FullName, $"#DATA:{id2}\r\n{(string)content}\r\nDATA#\r\n");
-                    //            }
-                    //        }
-                    //        else
-                    //        {
-
-                    //            var cont = File.ReadAllText(fi.FullName);
-                    //            if (cont == "")
-                    //                File.WriteAllText(fi.FullName, $"#Database.Ver={DatabaseVersion.Build}\r\n#Form={CurrentForm}\r\n#Flavor={Flavor}\r\n#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#\r\n");
-                    //            else
-                    //            {
-                    //                File.AppendAllText(fi.FullName, $"#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#\r\n");
-                    //            }
-                    //        }
-                    //    }
-                    //    else
-                    //    {
-                    //        if (cryptographyCredential.Key == "")
-                    //        {
-                    //            tR.RemoveRange(index, count);
-                    //            tR.Insert(index, $"#DATA:{id2}\r\n{((string)content)}\r\nDATA#");
-
-                    //            File.WriteAllLines(fi.FullName, tR);
-                    //        }
-                    //        else
-                    //        {
-
-                    //            tR.RemoveRange(index, count);
-                    //            tR.Insert(index, $"#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#");
-                    //            File.WriteAllLines(fi.FullName, tR);
-                    //        }
-                    //    }
-                    //    if (data.ContainsKey(id1))
-                    //    {
-                    //        if (data[id1].ContainsKey(id2))
-                    //        {
-                    //            data[id1][id2] = content;
-                    //        }
-                    //        else
-                    //        {
-                    //            data[id1].Add(id2, content);
-                    //        }
-                    //    }
-                    //    else
-                    //    {
-                    //        Dictionary<string, object> tmp = new Dictionary<string, object>();
-                    //        tmp.Add(id2, content);
-                    //        data.Add(id1, tmp);
-                    //    }
-                    //}
                     break;
                 case DatabaseMode.SemiCache:
                     break;

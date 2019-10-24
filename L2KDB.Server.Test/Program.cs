@@ -16,7 +16,7 @@ namespace L2KDB.Server.Test
             var s = client.GetStream();
             StreamWriter streamWriter = new StreamWriter(s);
             {
-                AdvancedStream.SendMessage(ref streamWriter, "L2KDB:Basic:OpenSession|1909853U-I011-0023|Creeper Lv\r\nL2KDB:Basic:EndOfCurrentTransmission");
+                AdvancedStream.SendMessage(ref streamWriter, "L2KDB:Basic:OpenSession|Creeper Lv|123456\r\nL2KDB:Basic:EndOfCurrentTransmission");
                 //streamWriter.Flush();
 
             }

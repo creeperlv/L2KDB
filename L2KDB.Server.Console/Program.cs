@@ -1,6 +1,7 @@
 ﻿using L2KDB.Server.Core;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace L2KDB.Server.SConsole
 {
@@ -10,12 +11,13 @@ namespace L2KDB.Server.SConsole
         {
             Console.WriteLine("Local 2-Key Database Server");
             ServerCore core = new ServerCore();
-            core.Start();
+            Task.Run(() => core.Start());
             while (true)
             {
                 var cmd= Console.ReadLine();
                 if (cmd.ToUpper() == "STOP")
                 {
+                    core.StopServer();
                     Environment.Exit(0);
                 }else if (cmd.ToUpper().StartsWith("Set-Admin"))
                 {
