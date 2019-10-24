@@ -19,7 +19,8 @@ namespace L2KDB.Server.SConsole
                 {
                     core.StopServer();
                     Environment.Exit(0);
-                }else if (cmd.ToUpper().StartsWith("Set-Admin"))
+                }
+                else if (cmd.ToUpper().StartsWith("SET-ADMIN"))
                 {
                     try
                     {
