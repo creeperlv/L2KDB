@@ -4,12 +4,23 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace LiteDatabase
 {
     public enum DatabaseMode
     {
         OnDemand, Cache, SemiCache
+    }
+    public class DatabaseOperationEssentialClass
+    {
+        public string id1;
+        public string id2;
+    }
+    public class DBOperationRemoveID2 : DatabaseOperationEssentialClass { }
+    public class DBOperationSave : DatabaseOperationEssentialClass
+    {
+        public string content;
     }
     //Local Two-Key DB "L2KDB"
     public class Database
@@ -22,6 +33,27 @@ namespace LiteDatabase
         public string givenHome = "";
         public string GeneratedID = "";
         public CustomedAES aes = new CustomedAES();
+        Queue<DatabaseOperationEssentialClass> OperationQueue = new Queue<DatabaseOperationEssentialClass>();
+        public async void CycleQueueProcessor()
+        {
+            string OperatingForm = CurrentForm;
+            while (OperatingForm==CurrentForm)
+            {
+                await Task.Delay(1000);
+                Queue<DatabaseOperationEssentialClass> CopiedOperations = new Queue<DatabaseOperationEssentialClass>(OperationQueue.ToArray());
+                foreach (var item in CopiedOperations)
+                {
+                    if (item.GetType() == typeof(DBOperationSave))
+                    {
+
+                    }
+                    else if (item.GetType() == typeof(DBOperationRemoveID2))
+                    {
+
+                    }
+                }
+            }
+        }
         public Database(String Home = "./Databases/", DatabaseMode loadMode = DatabaseMode.OnDemand, CryptographyCredential cryptographyCredential = null)
         {
             givenHome = Home;
@@ -105,7 +137,6 @@ namespace LiteDatabase
                     break;
                 case DatabaseMode.Cache:
                     return data.Keys.ToList();
-                    break;
                 case DatabaseMode.SemiCache:
                     break;
                 default:
@@ -141,6 +172,7 @@ namespace LiteDatabase
                             var d = LoadFile(id1);
                             data.Add(id1, d);
                         }
+                        Task.Run(CycleQueueProcessor);
                     }
                     break;
                 case DatabaseMode.SemiCache:
@@ -485,100 +517,100 @@ namespace LiteDatabase
                     }
                     break;
                 case DatabaseMode.Cache:
+                    OperationQueue.Enqueue(new DBOperationSave() { id1 = id1 ,id2=id2,content=(string)content});
+                    //{
+                    //    FileInfo fi = new FileInfo(Path.Combine(FormDirectory.FullName, id1 + ".lite-db"));
 
-                    {
-                        FileInfo fi = new FileInfo(Path.Combine(FormDirectory.FullName, id1 + ".lite-db"));
+                    //    if (!fi.Exists) fi.Create().Dispose();
+                    //    var tR = File.ReadAllLines(fi.FullName).ToList();
+                    //    int length = tR.Count;
+                    //    bool logMode = false;
+                    //    int count = 1;
+                    //    int index = -1;
+                    //    for (int i = 0; i < tR.Count; i++)
+                    //    {
+                    //        if (logMode == true)
+                    //        {
+                    //            count++;
+                    //            if (tR[i] == "DATA#")
+                    //            {
+                    //                logMode = false;
+                    //                break;
+                    //            }
+                    //            else
+                    //            {
+                    //            }
+                    //        }
+                    //        else
+                    //        {
 
-                        if (!fi.Exists) fi.Create().Dispose();
-                        var tR = File.ReadAllLines(fi.FullName).ToList();
-                        int length = tR.Count;
-                        bool logMode = false;
-                        int count = 1;
-                        int index = -1;
-                        for (int i = 0; i < tR.Count; i++)
-                        {
-                            if (logMode == true)
-                            {
-                                count++;
-                                if (tR[i] == "DATA#")
-                                {
-                                    logMode = false;
-                                    break;
-                                }
-                                else
-                                {
-                                }
-                            }
-                            else
-                            {
+                    //            if (tR[i] == "#DATA:" + id2)
+                    //            {
+                    //                index = i;
+                    //                logMode = true;
+                    //            }
+                    //        }
+                    //    }
+                    //    if (index == -1)
+                    //    {
+                    //        if (cryptographyCredential.Key == "")
+                    //        {
 
-                                if (tR[i] == "#DATA:" + id2)
-                                {
-                                    index = i;
-                                    logMode = true;
-                                }
-                            }
-                        }
-                        if (index == -1)
-                        {
-                            if (cryptographyCredential.Key == "")
-                            {
+                    //            var cont = File.ReadAllText(fi.FullName);
+                    //            if (cont == "")
+                    //                File.WriteAllText(fi.FullName, $"#Database.Ver={DatabaseVersion.Build}\r\n#Form={CurrentForm}\r\n#Flavor={Flavor}\r\n#DATA:{id2}\r\n{((string)content)}\r\nDATA#\r\n");
+                    //            else
+                    //            {
+                    //                File.AppendAllText(fi.FullName, $"#DATA:{id2}\r\n{(string)content}\r\nDATA#\r\n");
+                    //            }
+                    //        }
+                    //        else
+                    //        {
 
-                                var cont = File.ReadAllText(fi.FullName);
-                                if (cont == "")
-                                    File.WriteAllText(fi.FullName, $"#Database.Ver={DatabaseVersion.Build}\r\n#Form={CurrentForm}\r\n#Flavor={Flavor}\r\n#DATA:{id2}\r\n{((string)content)}\r\nDATA#\r\n");
-                                else
-                                {
-                                    File.AppendAllText(fi.FullName, $"#DATA:{id2}\r\n{(string)content}\r\nDATA#\r\n");
-                                }
-                            }
-                            else
-                            {
+                    //            var cont = File.ReadAllText(fi.FullName);
+                    //            if (cont == "")
+                    //                File.WriteAllText(fi.FullName, $"#Database.Ver={DatabaseVersion.Build}\r\n#Form={CurrentForm}\r\n#Flavor={Flavor}\r\n#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#\r\n");
+                    //            else
+                    //            {
+                    //                File.AppendAllText(fi.FullName, $"#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#\r\n");
+                    //            }
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        if (cryptographyCredential.Key == "")
+                    //        {
+                    //            tR.RemoveRange(index, count);
+                    //            tR.Insert(index, $"#DATA:{id2}\r\n{((string)content)}\r\nDATA#");
 
-                                var cont = File.ReadAllText(fi.FullName);
-                                if (cont == "")
-                                    File.WriteAllText(fi.FullName, $"#Database.Ver={DatabaseVersion.Build}\r\n#Form={CurrentForm}\r\n#Flavor={Flavor}\r\n#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#\r\n");
-                                else
-                                {
-                                    File.AppendAllText(fi.FullName, $"#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#\r\n");
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (cryptographyCredential.Key == "")
-                            {
-                                tR.RemoveRange(index, count);
-                                tR.Insert(index, $"#DATA:{id2}\r\n{((string)content)}\r\nDATA#");
+                    //            File.WriteAllLines(fi.FullName, tR);
+                    //        }
+                    //        else
+                    //        {
 
-                                File.WriteAllLines(fi.FullName, tR);
-                            }
-                            else
-                            {
-
-                                tR.RemoveRange(index, count);
-                                tR.Insert(index, $"#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#");
-                                File.WriteAllLines(fi.FullName, tR);
-                            }
-                        }
-                        if (data.ContainsKey(id1))
-                        {
-                            if (data[id1].ContainsKey(id2))
-                            {
-                                data[id1][id2] = content;
-                            }
-                            else
-                            {
-                                data[id1].Add(id2, content);
-                            }
-                        }
-                        else
-                        {
-                            Dictionary<string, object> tmp = new Dictionary<string, object>();
-                            tmp.Add(id2, content);
-                            data.Add(id1, tmp);
-                        }
-                    }
+                    //            tR.RemoveRange(index, count);
+                    //            tR.Insert(index, $"#DATA:{id2}\r\n{aes.Encrypt((string)content)}\r\nDATA#");
+                    //            File.WriteAllLines(fi.FullName, tR);
+                    //        }
+                    //    }
+                    //    if (data.ContainsKey(id1))
+                    //    {
+                    //        if (data[id1].ContainsKey(id2))
+                    //        {
+                    //            data[id1][id2] = content;
+                    //        }
+                    //        else
+                    //        {
+                    //            data[id1].Add(id2, content);
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        Dictionary<string, object> tmp = new Dictionary<string, object>();
+                    //        tmp.Add(id2, content);
+                    //        data.Add(id1, tmp);
+                    //    }
+                    //}
                     break;
                 case DatabaseMode.SemiCache:
                     break;
