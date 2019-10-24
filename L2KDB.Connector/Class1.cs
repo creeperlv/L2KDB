@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using L2KDB.Server.Utils.IO;
 using LiteDatabase.CustomedCryptography;
 
@@ -171,6 +173,34 @@ namespace L2KDB.Connector
                 }
             }
             return "[F]Unconnected";
+        }
+        public List<string> GetForms()
+        {
+            List<string> vs = new List<string>();
+
+            if (isConnected == true)
+            {
+                {
+
+                    var Command = aes.Decrypt(Reader.ReadLine());
+                    var data = AdvancedStream.ReadToCurrentEnd(ref Reader, aes);
+                    if (Command == "L2KDB:Basic:DatabaseGetFormsResult")
+                    {
+                        StringReader stringReader = new StringReader(data);
+                        var temp = "";
+                        while ((temp= stringReader.ReadLine())!=null)
+                        {
+                            vs.Add(temp);
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("" + Command);
+                    }
+                }
+                return vs;
+            }
+            throw new Exception("Unconnected");
         }
         public string  Query(string id1, string id2, string content)
         {

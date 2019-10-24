@@ -22,6 +22,10 @@ namespace L2KDB.Server.Core
             }
             return true;
         }
+        public void SetAdmin(string usr,string pwd)
+        {
+            ServerConfig.Save(Authentication.ObtainID(usr,pwd),"AdminAccess",""+true);
+        }
         void InitBasicCommands()
         {
             {

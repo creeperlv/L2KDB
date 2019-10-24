@@ -11,9 +11,40 @@ namespace L2KDB.Server.SConsole
             Console.WriteLine("Local 2-Key Database Server");
             ServerCore core = new ServerCore();
             core.Start();
+            while (true)
+            {
+                var cmd= Console.ReadLine();
+                if (cmd.ToUpper() == "STOP")
+                {
+                    Environment.Exit(0);
+                }else if (cmd.ToUpper().StartsWith("Set-Admin"))
+                {
+                    try
+                    {
 
-            Console.ReadLine();
+                        var combine = cmd.Substring("Set-Admin".Length);
+                        var auth = combine.Split(' ');
+                        core.SetAdmin(auth[0], auth[1]);
 
+                    }
+                    catch (Exception e)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"Unable to set admin.\r\bException:{e.Message}");
+                    }
+                }
+                else
+                {
+                    if (cmd.Trim() == "")
+                    {
+
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Command: {cmd} not found!");
+                    }
+                }
+            }
         }
     }
 }
