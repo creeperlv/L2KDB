@@ -69,7 +69,7 @@ namespace L2KDB.Server.Core
                 try
                 {
                     var Command= CustomedAES.Decrypt(await Reader.ReadLineAsync());
-                    var data = AdvancedStream.ReadToCurrentEnd(ref Reader, CustomedAES);
+                    var data = AdvancedStream.ReadToCurrentEnd(ref Reader, CustomedAES, false);
                     /**
                      * Data Structure:
                      * [Command]|[SessionID]|[Key(Optional)]|[IV(Optional)]

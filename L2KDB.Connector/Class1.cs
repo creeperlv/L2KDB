@@ -183,7 +183,7 @@ namespace L2KDB.Connector
                 {
                     AdvancedStream.SendMessage(ref Writer, $"L2KDB:Basic:GetForms|{sessionID}", aes);
                     var Command = aes.Decrypt(Reader.ReadLine());
-                    var data = AdvancedStream.ReadToCurrentEnd(ref Reader, aes);
+                    var data = AdvancedStream.ReadToCurrentEnd(ref Reader, aes,false);
                     if (Command == "L2KDB:Basic:DatabaseGetFormsResult")
                     {
                         StringReader stringReader = new StringReader(data);
@@ -209,7 +209,7 @@ namespace L2KDB.Connector
                 {
                     AdvancedStream.SendMessage(ref Writer, $"L2KDB:Basic:Query,{id1},{id2}|{sessionID}", aes);
                     var Command = aes.Decrypt(Reader.ReadLine());
-                    var data = AdvancedStream.ReadToCurrentEnd(ref Reader, aes);
+                    var data = AdvancedStream.ReadToCurrentEnd(ref Reader, aes, false);
                     if (Command == "L2KDB:Basic:DatabaseQueryResult")
                     {
                         return data;

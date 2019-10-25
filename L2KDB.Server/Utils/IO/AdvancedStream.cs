@@ -46,7 +46,7 @@ namespace L2KDB.Server.Utils.IO
             }
             return content;
         }
-        public static string ReadToCurrentEnd(ref StreamReader streamReader, CustomedAES aes)
+        public static string ReadToCurrentEnd(ref StreamReader streamReader, CustomedAES aes,bool isHeaderRequired=true)
         {
             string content = "";
             string tmp;
@@ -71,7 +71,7 @@ namespace L2KDB.Server.Utils.IO
                     if (content.StartsWith("L2KDB:"))
                     {
                     }
-                    else
+                    else if(isHeaderRequired==true)
                     {
                         return "WRONG HEADER";
                     }
