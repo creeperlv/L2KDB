@@ -15,6 +15,7 @@ namespace L2KDB.Server.Core
 {
     public class ServerCore
     {
+        public readonly Version CoreVersion = new Version(1, 0, 1, 0);
         public bool CheckName(string n)
         {
             if(n == "" ||n == "/" || n == "\\" || n == "." || n == ".."|| n.IndexOf("/")>=0|| n.IndexOf("\\")>=0|| n.IndexOf(".")==0)
@@ -26,6 +27,10 @@ namespace L2KDB.Server.Core
         public void SetAdmin(string usr,string pwd)
         {
             ServerConfig.Save(Authentication.ObtainID(usr,pwd),"AdminAccess",""+true);
+        }
+        public void RemoveAdmin(string usr,string pwd)
+        {
+            ServerConfig.Save(Authentication.ObtainID(usr,pwd),"AdminAccess",""+false);
         }
         void InitBasicCommands()
         {
@@ -186,8 +191,9 @@ namespace L2KDB.Server.Core
                         var data = session.operatingBD.realDB.Query(para[0], para[1]);
                         
                         session.SendData("L2KDB:Basic:DatabaseQueryResult" , ""+data);
+                        return "-1";
                     }
-                    return "";
+                    return "L2KDN:Basic:UnknownError";
                 });
                 BasicCommandSet.Functions.Add("GetForms", (List<string> para, string content, Session session) =>
                 {
@@ -197,6 +203,7 @@ namespace L2KDB.Server.Core
                         var combineD = "";
                         foreach (var item in data)
                         {
+                            Diagnotor.CurrentDiagnotor.Log("Form:"+combineD);
                             if (combineD == "")
                             {
                                 combineD = item;
@@ -206,9 +213,14 @@ namespace L2KDB.Server.Core
                                 combineD += Environment.NewLine + item;
                             }
                         }
-                        session.SendData("L2KDB:Basic:DatabaseGetFormsResult" , ""+data);
-                    }
-                    return "";
+                        if (combineD == "")
+                        {
+                            combineD = "";
+                        }
+                        session.SendData("L2KDB:Basic:DatabaseGetFormsResult" , ""+ combineD);
+                        return "-1";
+                    }else
+                    return "L2KDB:Basic:AccessForbidden";
                 });
                 BasicCommandSet.Functions.Add("Save", (List<string> para, string content, Session session) =>
                 {

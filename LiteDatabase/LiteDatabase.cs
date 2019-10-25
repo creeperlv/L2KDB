@@ -413,7 +413,7 @@ namespace LiteDatabase
                             var tmp = tR.ReadLine();
                             if (tmp == null)
                             {
-                                Console.WriteLine("Cannot find:" + id2);
+                                //Console.WriteLine("Cannot find:" + id2);
                                 tR.Dispose();
                                 throw new Exception("Cannot find:" + id1 + "," + id2);
                             }

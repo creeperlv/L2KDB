@@ -181,7 +181,7 @@ namespace L2KDB.Connector
             if (isConnected == true)
             {
                 {
-
+                    AdvancedStream.SendMessage(ref Writer, $"L2KDB:Basic:GetForms|{sessionID}", aes);
                     var Command = aes.Decrypt(Reader.ReadLine());
                     var data = AdvancedStream.ReadToCurrentEnd(ref Reader, aes);
                     if (Command == "L2KDB:Basic:DatabaseGetFormsResult")
@@ -207,7 +207,7 @@ namespace L2KDB.Connector
             if (isConnected == true)
             {
                 {
-
+                    AdvancedStream.SendMessage(ref Writer, $"L2KDB:Basic:Query,{id1},{id2}|{sessionID}", aes);
                     var Command = aes.Decrypt(Reader.ReadLine());
                     var data = AdvancedStream.ReadToCurrentEnd(ref Reader, aes);
                     if (Command == "L2KDB:Basic:DatabaseQueryResult")
