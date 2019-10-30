@@ -83,6 +83,50 @@ namespace L2KDB.Server.UWP.ConsoleApp
                         Console.ForegroundColor = ConsoleColor.White;
                     }
                 }
+                else if (cmd.ToUpper().StartsWith("SET-PORT"))
+                {
+                    try
+                    {
+
+                        var combine = cmd.Substring("Set-Port".Length).Trim();
+                        core.SetPort(int.Parse(combine));
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine($"Set port to: {combine}.");
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine($"It requires a restart to take effect.");
+                        Console.ForegroundColor = ConsoleColor.White;
+
+                    }
+                    catch (Exception e)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"Unable to set port.\r\bException:{e.Message}");
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                }
+                else if (cmd.ToUpper().StartsWith("SET-IP"))
+                {
+                    try
+                    {
+
+                        var combine = cmd.Substring("Set-IP".Length).Trim();
+                        core.SetIP((combine));
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine($"Set IP to: {combine}.");
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine($"It requires a restart to take effect.");
+                        Console.ForegroundColor = ConsoleColor.White;
+
+                    }
+                    catch (Exception e)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"Unable to set port.\r\bException:{e.Message}");
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                }
                 else if (cmd.ToUpper().StartsWith("REMOVE-ADMIN"))
                 {
                     try

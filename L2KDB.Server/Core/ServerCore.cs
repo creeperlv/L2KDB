@@ -369,6 +369,18 @@ namespace L2KDB.Server.Core
                 });
             }
         }
+
+        public void SetPort(int v)
+        {
+            ServerConfig.OpenForm("Server");
+            ServerConfig.Save("BasicConfig","Port",""+v);
+        }
+        public void SetIP(string s)
+        {
+            ServerConfig.OpenForm("Server");
+            ServerConfig.Save("BasicConfig","IP",s);
+        }
+
         public string BasePath="./Databasee/";
         void InitAdminCommands()
         {
