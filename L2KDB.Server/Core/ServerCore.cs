@@ -257,6 +257,10 @@ namespace L2KDB.Server.Core
                 });
                 BasicCommandSet.Functions.Add("GetID2", (List<string> para, string content, Session session) =>
                 {
+                    if (CheckName(para[0]) == false)
+                    {
+                        return "L2KDB:Basic:IllegalName";
+                    }
                     if (FindPermission(session, "Database->" + session.operatingBD.realDB.HomeDirectory.Name) || FindPermission(session, "FullDBAccess"))
                     {
                         var data = session.operatingBD.realDB.GetID2(para[0]);
