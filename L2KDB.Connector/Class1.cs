@@ -190,6 +190,74 @@ namespace L2KDB.Connector
                         var temp = "";
                         while ((temp= stringReader.ReadLine())!=null)
                         {
+                            if(temp== "L2KDB:Basic:NoForms")
+                            {
+
+                            }else
+                            vs.Add(temp);
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("" + Command);
+                    }
+                }
+                return vs;
+            }
+            throw new Exception("Unconnected");
+        }
+        public List<string> GetID1s()
+        {
+            List<string> vs = new List<string>();
+
+            if (isConnected == true)
+            {
+                {
+                    AdvancedStream.SendMessage(ref Writer, $"L2KDB:Basic:GetID1|{sessionID}", aes);
+                    var Command = aes.Decrypt(Reader.ReadLine());
+                    var data = AdvancedStream.ReadToCurrentEnd(ref Reader, aes,false);
+                    if (Command == "L2KDB:Basic:DatabaseGetID1Result")
+                    {
+                        StringReader stringReader = new StringReader(data);
+                        var temp = "";
+                        while ((temp= stringReader.ReadLine())!=null)
+                        {
+                            if(temp== "L2KDB:Basic:NoID1")
+                            {
+
+                            }else
+                            vs.Add(temp);
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("" + Command);
+                    }
+                }
+                return vs;
+            }
+            throw new Exception("Unconnected");
+        }
+        public List<string> GetID2s(string id1)
+        {
+            List<string> vs = new List<string>();
+
+            if (isConnected == true)
+            {
+                {
+                    AdvancedStream.SendMessage(ref Writer, $"L2KDB:Basic:GetID2,{id1}|{sessionID}", aes);
+                    var Command = aes.Decrypt(Reader.ReadLine());
+                    var data = AdvancedStream.ReadToCurrentEnd(ref Reader, aes,false);
+                    if (Command == "L2KDB:Basic:DatabaseGetID2Result")
+                    {
+                        StringReader stringReader = new StringReader(data);
+                        var temp = "";
+                        while ((temp= stringReader.ReadLine())!=null)
+                        {
+                            if(temp== "L2KDB:Basic:NoID2")
+                            {
+
+                            }else
                             vs.Add(temp);
                         }
                     }

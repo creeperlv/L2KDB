@@ -28,6 +28,10 @@ namespace L2KDB.Server.Core
         {
             ServerConfig.Save(Authentication.ObtainID(usr,pwd),"AdminAccess",""+true);
         }
+        public void SetPermission(string AuthID,string PermissionName,string content)
+        {
+            ServerConfig.Save(AuthID, PermissionName, ""+content);
+        }
         public void RemoveAdmin(string usr,string pwd)
         {
             ServerConfig.Save(Authentication.ObtainID(usr,pwd),"AdminAccess",""+false);
@@ -165,7 +169,9 @@ namespace L2KDB.Server.Core
                             catch (Exception)
                             {
                             }
+
                             Database.CreateDatabase(Path.Combine(BasePath, para[0]), credential: new CryptographyCredential() { Key = para[1], IV = para[2] }, isPublic: willPub);
+                            SetPermission(session.AuthID, "Database->" + para[0], "" + true);
                             //Directory.CreateDirectory(BasePath + para[0]);
                         }
                         catch (Exception)
@@ -203,7 +209,7 @@ namespace L2KDB.Server.Core
                         var combineD = "";
                         foreach (var item in data)
                         {
-                            Diagnotor.CurrentDiagnotor.Log("Form:"+combineD);
+                            //Diagnotor.CurrentDiagnotor.Log("Form:"+combineD);
                             if (combineD == "")
                             {
                                 combineD = item;
@@ -215,9 +221,63 @@ namespace L2KDB.Server.Core
                         }
                         if (combineD == "")
                         {
-                            combineD = "";
+                            combineD = "L2KDB:Basic:NoForms";
                         }
                         session.SendData("L2KDB:Basic:DatabaseGetFormsResult" , ""+ combineD);
+                        return "-1";
+                    }else
+                    return "L2KDB:Basic:AccessForbidden";
+                });
+                BasicCommandSet.Functions.Add("GetID1", (List<string> para, string content, Session session) =>
+                {
+                    if (FindPermission(session, "Database->" + session.operatingBD.realDB.HomeDirectory.Name) || FindPermission(session, "FullDBAccess"))
+                    {
+                        var data = session.operatingBD.realDB.GetID1();
+                        var combineD = "";
+                        foreach (var item in data)
+                        {
+                            //Diagnotor.CurrentDiagnotor.Log("Form:"+combineD);
+                            if (combineD == "")
+                            {
+                                combineD = item;
+                            }
+                            else
+                            {
+                                combineD += Environment.NewLine + item;
+                            }
+                        }
+                        if (combineD == "")
+                        {
+                            combineD = "L2KDB:Basic:NoID1";
+                        }
+                        session.SendData("L2KDB:Basic:DatabaseGetID1Result" , ""+ combineD);
+                        return "-1";
+                    }else
+                    return "L2KDB:Basic:AccessForbidden";
+                });
+                BasicCommandSet.Functions.Add("GetID2", (List<string> para, string content, Session session) =>
+                {
+                    if (FindPermission(session, "Database->" + session.operatingBD.realDB.HomeDirectory.Name) || FindPermission(session, "FullDBAccess"))
+                    {
+                        var data = session.operatingBD.realDB.GetID2(para[0]);
+                        var combineD = "";
+                        foreach (var item in data)
+                        {
+                            //Diagnotor.CurrentDiagnotor.Log("Form:"+combineD);
+                            if (combineD == "")
+                            {
+                                combineD = item;
+                            }
+                            else
+                            {
+                                combineD += Environment.NewLine + item;
+                            }
+                        }
+                        if (combineD == "")
+                        {
+                            combineD = "L2KDB:Basic:NoID2";
+                        }
+                        session.SendData("L2KDB:Basic:DatabaseGetID2Result" , ""+ combineD);
                         return "-1";
                     }else
                     return "L2KDB:Basic:AccessForbidden";

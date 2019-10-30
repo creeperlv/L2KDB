@@ -101,7 +101,7 @@ namespace L2KDB.Server.Utils.IO
             string TitAes = aes.Encrypt(title);
             string res = aes.Encrypt(content);
             streamWriter.WriteLine(TitAes + streamWriter.NewLine+res + streamWriter.NewLine + aes.Encrypt("L2KDB:Basic:EndOfCurrentTransmission"));
-            Console.WriteLine(TitAes + streamWriter.NewLine+res + streamWriter.NewLine + aes.Encrypt("L2KDB:Basic:EndOfCurrentTransmission"));
+            //Console.WriteLine(TitAes + streamWriter.NewLine+res + streamWriter.NewLine + aes.Encrypt("L2KDB:Basic:EndOfCurrentTransmission"));
             streamWriter.Flush();
         }
     }
