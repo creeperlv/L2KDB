@@ -502,6 +502,7 @@ namespace L2KDB.Server.Core
             var Endpoint = new IPEndPoint(ip, port);
             Listener = new TcpListener(Endpoint);
             Listener.Start();
+            Diagnotor.CurrentDiagnotor.LogSuccess("Server started on: "+ipadd+":"+port);
             Listen();
         }
         bool stopFlag = false;

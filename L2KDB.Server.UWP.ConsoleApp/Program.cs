@@ -51,8 +51,7 @@ namespace L2KDB.Server.UWP.ConsoleApp
         {
             Console.WriteLine("AppData:" +
             Windows.Storage.ApplicationData.Current.LocalFolder.Path);
-            ServerCore core = new ServerCore(
-            Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\Databases\\",
+            ServerCore core = new ServerCore( Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\Databases\\",
             Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\Server-Config\\");
             Task.Run(() => core.Start());
             while (true)
