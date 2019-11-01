@@ -22,3 +22,9 @@ steps:
     command: 'publish'
     publishWebProjects: false
     projects: 'L2KDB.Server.Console/L2KDB.Server.Console.csproj'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
