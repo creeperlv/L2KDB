@@ -19,12 +19,12 @@ steps:
   displayName: 'Run a multi-line script'
 - task: DotNetCoreCLI@2
   inputs:
+    arguments: '-o $(Build.ArtifactStagingDirectory)'
     command: 'publish'
     publishWebProjects: false
     projects: 'L2KDB.Server.Console/L2KDB.Server.Console.csproj'
-
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '/home/vsts/work/1/s/L2KDB.Server.Console/bin/Debug/netcoreapp3.0/publish/'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
