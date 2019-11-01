@@ -30,19 +30,10 @@ namespace L2KDB.Server.WPF
         public MainWindow()
         {
             InitializeComponent();
-            //this.notifyIcon = new NotifyIcon();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //System.Windows.Forms.NotifyIcon notifyIcon = new System.Windows.Forms.NotifyIcon();
-            //var u = new Uri("L2KDBIcon.ico");
-            ////FileStream fileStream=new FileStream()
-            ////"L2KDBIcon.ico"
-            ////notifyIcon.Icon = new System.Drawing.Icon();
-            ////notifyIcon.Icon = new System.Drawing.Icon();
-            //notifyIcon.Visible = true;
-            //notifyIcon.show
             Hardcodet.Wpf.TaskbarNotification.TaskbarIcon taskbarIcon = new Hardcodet.Wpf.TaskbarNotification.TaskbarIcon();
             try
             {
