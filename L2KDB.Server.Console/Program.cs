@@ -132,6 +132,10 @@ namespace L2KDB.Server.SConsole
                     Console.Write("0.1.0.0\r\n");
                     Console.ForegroundColor = ConsoleColor.White;
                 }
+                else if (cmd.ToUpper().StartsWith("SET-FLAG"))
+                {
+
+                }
                 else
                 {
                     if (cmd.Trim() == "")

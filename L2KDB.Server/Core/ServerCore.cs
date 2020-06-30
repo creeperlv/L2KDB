@@ -446,12 +446,33 @@ namespace L2KDB.Server.Core
             Diagnotor.CurrentDiagnotor.LogSuccess("Completed.");
 
         }
+        public void InitializeFeatureFlags()
+        {
+            ServerConfig.OpenForm("Features");
+            var Names=ServerConfig.GetID2("Flags");
+            foreach (var item in Names)
+            {
+                try
+                {
+                    var value = ServerConfig.Query("Flags", item);
+                    VariablesPool.FeatureFlags.Add(item, int.Parse(value.ToString()));
+                }
+                catch (Exception)
+                {
+                }
+            }
+        }
+        public void InitializeCore()
+        {
+            InitBasicCommands();
+            InitAdminCommands();
+            InitializeFeatureFlags();
+        }
         public ServerCore(string BasePath="./Databases/",string SeverConfigPath="./Server-Config/")
         {
             this.BasePath = BasePath;
             ServerConfig = new LiteDatabase.Database(SeverConfigPath, LiteDatabase.DatabaseMode.OnDemand);
-            InitBasicCommands();
-            InitAdminCommands();
+            InitializeCore();
         }
         public static bool FindPermission(Session session, string PermissionID)
         {
