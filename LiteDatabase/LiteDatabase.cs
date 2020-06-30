@@ -1,6 +1,7 @@
 ﻿using LiteDatabase.AdvancedCache;
 using LiteDatabase.CustomedCryptography;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -43,6 +44,8 @@ namespace LiteDatabase
             List<string> QueuedID1s = new List<string>();
             Queue<DatabaseOperation> CopiedOperations = new Queue<DatabaseOperation>(OperationQueue.ToArray());
             OperationQueue.Clear();// Clear the queue to receive more operation applications without data lose;
+            //OperationQueue = new ConcurrentQueue<DatabaseOperation>();
+            //Clear() does not exist in ConcurrentQueue, so, directly replace it with new object.
             foreach (var item in CopiedOperations)
             {
                 string id1 = item.id1;
@@ -110,7 +113,7 @@ namespace LiteDatabase
         {
             DateTime mark = DateTime.Now;
             string OperatingForm = CurrentForm;
-            while (OperatingForm == CurrentForm&&DoCycleQueue==true)
+            while (OperatingForm == CurrentForm && DoCycleQueue == true)
             {
                 if (DateTime.Now - mark >= new TimeSpan(1000))
                 {
